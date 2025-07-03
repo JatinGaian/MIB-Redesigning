@@ -1,20 +1,30 @@
-// pages/OperationalDashboard.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import SprintCard from '../components/Operational_dashboard_component/sprintCard';
+import SprintPlan from '../components/Operational_dashboard_component/sprint_plan';
 import InfiniteScrolling from '../components/infinite_scrolling';
+import { useSprints } from '../hooks/useSprints';
+import { useSprintStore } from '../stores/sprintStore';
 
 const OperationalDashboard = () => {
-  const sprintData = [1, 2, 3, 4];
+  const { data: sprints, isLoading, isError } = useSprints();
+  const setSprints = useSprintStore((state) => state.setSprints);
+
+  useEffect(() => {
+    if (sprints) setSprints(sprints);
+  }, [sprints, setSprints]);
+
+  if (isLoading) return <div>Loading sprints...</div>;
+  if (isError) return <div>Error loading sprints.</div>;
 
   return (
-    <div className="w-[100vw] h-[100vh] bg-white flex items-start justify-center">
-      <InfiniteScrolling duration={25}>
-        {sprintData.map((_, i) => (
-          <div key={i} className="inline-block mx-[1vw]">
-            <SprintCard />
-          </div>
-        ))}
-      </InfiniteScrolling>
+    <div className="w-full h-[100vh] bg-white p-[2vh]">
+      {/* Sprint Plan at top */}
+      <SprintPlan />
+
+      {/* Sprint Cards below */}
+      <div className="mt-[3vh] flex justify-center">
+        <InfiniteScrolling sprints={sprints} />
+      </div>
     </div>
   );
 };

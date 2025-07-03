@@ -4,10 +4,13 @@ import manIcon from "../../assets/avatar_icons/man.png";
 import womanIcon from "../../assets/avatar_icons/woman.png";
 import gamerIcon from "../../assets/avatar_icons/gamer.png";
 
+const avatarMap = {
+  man: manIcon,
+  woman: womanIcon,
+  gamer: gamerIcon,
+};
 
-const SprintCard = () => {
-  const progressPercent = 20;
-
+const SprintCard = ({ name, goal, progress, assignees, stories, dateRange, status }) => {
   return (
     <div className="relative bg-white/70 backdrop-blur-md rounded-2xl shadow-xl w-full max-w-[20vw] border border-gray-200 transition-transform duration-200 hover:scale-105 overflow-hidden p-[1.2vh]">
       {/* Gradient Header */}
@@ -23,28 +26,28 @@ const SprintCard = () => {
           </svg>
         </div>
         <div>
-          <h2 className="text-[2.2vh] font-extrabold text-gray-800 drop-shadow-sm tracking-wide leading-tight">MIB SPRINT</h2>
-          <p className="text-[1.3vh] text-gray-500 font-semibold leading-tight">Sprint Goal</p>
+          <h2 className="text-[2.2vh] font-extrabold text-gray-800 drop-shadow-sm tracking-wide leading-tight">{name}</h2>
+          <p className="text-[1.3vh] text-gray-500 font-semibold leading-tight">{goal}</p>
         </div>
         <div className="flex-1 flex justify-end">
           <span className="text-[1.3vh] bg-blue-100 text-blue-700 px-[0.8vw] py-[0.4vh] rounded-full flex items-center gap-[0.4vw] shadow-sm font-bold">
             <span className="w-[0.7vw] h-[0.7vw] bg-green-500 rounded-full inline-block"></span>
-            On Track
+            {status}
           </span>
         </div>
       </div>
 
       {/* Card Body */}
       <div className="p-[1.5vh]">
-        <p className="text-[1.4vh] text-gray-700 mb-[0.7vh] font-bold tracking-wide">20 July – 26 July</p>
+        <p className="text-[1.4vh] text-gray-700 mb-[0.7vh] font-bold tracking-wide">{dateRange}</p>
 
         <div className="mb-[1.5vh]">
           <div className="flex justify-between items-center mb-[0.3vh]">
             <span className="text-[1.2vh] text-gray-600 font-bold">Sprint Progress</span>
-            <span className="text-[1.2vh] text-green-700 font-extrabold">{progressPercent}%</span>
+            <span className="text-[1.2vh] text-green-700 font-extrabold">{progress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-[0.7vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-green-400 to-green-600 h-[0.7vh] rounded-full animate-pulse" style={{ width: `${progressPercent}%` }} />
+            <div className="bg-gradient-to-r from-green-400 to-green-600 h-[0.7vh] rounded-full animate-pulse" style={{ width: `${progress}%` }} />
           </div>
         </div>
 
@@ -56,34 +59,15 @@ const SprintCard = () => {
           <div className="flex flex-col items-center gap-[0.3vh]">
             <span className="text-gray-800 font-bold">Stories</span>
             <span className="px-[1vw] py-[0.5vh] bg-gradient-to-r from-gray-100 to-gray-200 rounded-full text-gray-800 shadow-sm text-[1.5vh]">
-              2/10
+              {stories?.done}/{stories?.total}
             </span>
           </div>
 
-          {/* ✅ Assignees with PeopleAvatar */}
+          {/* Assignees with PeopleAvatar */}
           <div className="flex flex-col items-center gap-[0.3vh]">
             <span className="text-gray-700 font-bold">Assignees</span>
             <PeopleAvatar
-              people={[
-                { name: 'vishwas', image: manIcon },
-                { name: 'maya', image: womanIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-                { name: 'prasad', image: gamerIcon },// this makes +1 visible
-              ]}
+              people={assignees?.map(a => ({ ...a, image: avatarMap[a.image] }))}
             />
           </div>
         </div>

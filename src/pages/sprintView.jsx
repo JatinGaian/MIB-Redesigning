@@ -1,9 +1,13 @@
 import React from 'react';
+import SprintInfo  from '../components/sprint_view_component/sprint_info';
 
-export default function SprintView() {
+export default function SprintViewPage() {
   return (
-    <div className="flex items-center justify-center h-[90vh] w-full">
-      <h1 className="text-[2.5vw] font-bold text-blue-700">Sprint View</h1>
+    <div className="w-full p-[2vh] space-y-[2vh]">
+      {/* Sprint goal top section */}
+      <SprintInfo />
+
+  
     </div>
   );
-} 
+}

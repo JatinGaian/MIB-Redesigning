@@ -1,1 +1,1 @@
-// Placeholder for MIBstructure.jsx 
+// Placeholder for MIBstructure.jsx

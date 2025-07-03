@@ -1,9 +1,10 @@
 import React from 'react';
 import SprintCard from '../components/Operational_dashboard_component/sprintCard';
 
-const cards = Array.from({ length: 6 }); // Number of unique cards
+const InfiniteScrolling = ({ sprints = [] }) => {
+  // Duplicate sprints for infinite effect
+  const displaySprints = [...sprints, ...sprints];
 
-const InfiniteScrolling = () => {
   return (
     <div className="relative w-full max-w-[96vw] mx-auto overflow-hidden px-[2vw]">
       <div
@@ -13,8 +14,10 @@ const InfiniteScrolling = () => {
           width: 'max-content',
         }}
       >
-        {[...cards, ...cards].map((_, idx) => (
-          <SprintCard key={idx} />
+        {displaySprints.map((sprint, idx) => (
+          <div key={idx} className="inline-block mx-[1vw]">
+            <SprintCard {...sprint} />
+          </div>
         ))}
       </div>
 
