@@ -1,8 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const AVATAR_SIZE = 1.5; // vw
-const OVERLAP = 0.6;   // vw
+const AVATAR_SIZE = 1.4 ; // vw
+const OVERLAP = 0.4;   // vw
 
 const PeopleAvatar = ({ people }) => {
   const visible_avatar = people.slice(0, 3);

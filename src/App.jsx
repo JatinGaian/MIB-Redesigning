@@ -28,9 +28,9 @@ function MainContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex flex-col md:flex-row min-h-[100vh] w-[100vw] bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex h-[100vh] w-[100vw] bg-gradient-to-br from-gray-50 to-gray-100">
         <Sidebar />
-        <div className="flex-1 min-h-[92vh] md:min-h-[100vh] w-[100vw] md:w-auto">
+        <div className="  w-[94vw] p-[1.5vw]">
           <MainContent />
         </div>
       </div>
