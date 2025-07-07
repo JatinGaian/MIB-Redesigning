@@ -23,7 +23,7 @@ const RecentActivityCard = () => {
         className={`bg-white rounded-xl shadow-lg border transition-all z-50 overflow-hidden flex flex-col
           ${isMaximized
             ? "fixed top-[10vh] left-1/2 -translate-x-1/2 w-[90vw] md:w-[70vw] h-[75vh]"
-            : "w-[90vw] sm:w-[70vw] md:w-[35vw] h-[45vh]"
+            : "h-[30vh] w-full"
           }`}
       >
         {/* Header */}
@@ -40,7 +40,7 @@ const RecentActivityCard = () => {
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto px-[1vh] py-[1vh] space-y-[1.5vh] h-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+        <div className="overflow-y-auto px-[1vh] py-[1vh] space-y-[1.5vh] h-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {activities.map((activity) => (
             <div key={activity.id} className="flex items-start gap-[1vw]">
               <div className="w-[2.5vw] aspect-square rounded-full bg-blue-600 text-white flex items-center justify-center text-[0.8vw] font-bold">

@@ -20,6 +20,30 @@ const SprintStories = () => {
       status: "In Progress",
       assignee: "K",
     },
+    {
+      id: "MIB-42",
+      description: "Errors ",
+      status: "ToDo",
+      assignee: "A",
+    },
+    {
+      id: "MIB-43",
+      description: "Rendering issue ",
+      status: "In Progress",
+      assignee: "S",
+    },
+    {
+      id: "MIB-44",
+      description: "API issue ",
+      status: "In Progress",
+      assignee: "X",
+    },
+    {
+      id: "MIB-45",
+      description:"State management issue",
+      status: "Done",
+      assignee: "T",
+    },
   ];
 
   const statusColors = {
@@ -37,11 +61,11 @@ const SprintStories = () => {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border flex flex-col w-[49vw] h-[45vh] px-[1.5vw] py-[1.5vh] overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border flex flex-col w-full h-[30vh] px-[1.5vw] py-[1.5vh] overflow-hidden">
+
       {/* Header */}
       <div className="mb-[1vh]">
         <h2 className="text-[1.2vw] font-bold">Sprint Stories</h2>
-      
       </div>
 
       {/* Status Summary */}
@@ -59,14 +83,14 @@ const SprintStories = () => {
       </div>
 
       {/* Scrollable Stories */}
-      <div className="overflow-y-auto h-full space-y-[1vh] pr-[0.5vw]">
+      <div className="overflow-y-auto h-full space-y-[1vh] pr-[0.5vw] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 no-scrollbar-buttons">
         {stories.map((story) => (
           <div
             key={story.id}
-            className="flex items-center bg-gray-50 rounded-[0.7vw] p-[1vw] gap-[1vw]"
+            className="flex items-center bg-gray-50 rounded-[0.5vw] p-[0.3vw] gap-[1vw]"
           >
             {/* Icon */}
-            <div className="w-[2vw] h-[2vw]">
+            <div className="w-[1.5vw] h-[1.5vw]">
               <svg
                 width="100%"
                 height="100%"
@@ -84,14 +108,14 @@ const SprintStories = () => {
             </div>
 
             {/* ID and Description */}
-            <div className="flex-1 text-[0.9vw]">
-              <div className="font-semibold text-[1vw] mb-[0.4vh]">{story.id}</div>
+            <div className="flex-1 text-[0.8vw]">
+              <div className="font-semibold text-[0.9vw] mb-[0.4vh]">{story.id}</div>
               <div className="text-gray-700">{story.description}</div>
             </div>
 
             {/* Status */}
             <div
-              className={`px-[1vw] py-[0.3vw] rounded-[0.5vw] font-semibold text-[0.8vw] whitespace-nowrap ${statusColors[story.status]}`}
+              className={`px-[0.8vw] py-[0.3vw] rounded-[0.4vw] font-semibold text-[0.7vw] whitespace-nowrap ${statusColors[story.status]}`}
             >
               {story.status}
             </div>
