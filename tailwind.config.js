@@ -9,14 +9,21 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'bounce-slow': 'bounce 2s infinite',
+        'scroll': 'scroll 30s linear infinite',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
-        }
-      }
+        },
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+      },
     },
   },
-  plugins: [],
-}
+  plugins: [
+    require('tailwind-scrollbar'), 
+  ],
+};
