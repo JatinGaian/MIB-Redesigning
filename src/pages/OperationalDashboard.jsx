@@ -17,7 +17,7 @@ const OperationalDashboard = () => {
   if (isError) return <div>Error loading sprints.</div>;
 
   return (
-    <div className="w-full h-[100vh] bg-white p-[2vh]">
+    <div className="w-full h-full bg-white]">
       {/* Sprint Plan at top */}
       <SprintPlan />
 

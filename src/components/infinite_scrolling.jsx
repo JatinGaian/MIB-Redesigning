@@ -6,16 +6,16 @@ const InfiniteScrolling = ({ sprints = [] }) => {
   const displaySprints = [...sprints, ...sprints];
 
   return (
-    <div className="relative w-full max-w-[96vw] mx-auto overflow-hidden px-[2vw]">
+    <div className=" w-full overflow-hidden ">
       <div
-        className="flex items-center gap-[2vw]"
+        className="flex items-start gap-[1vw]"
         style={{
           animation: 'scroll-left 30s linear infinite',
-          width: 'max-content',
+          // width: 'max-content',
         }}
       >
         {displaySprints.map((sprint, idx) => (
-          <div key={idx} className="inline-block mx-[1vw]">
+          <div key={idx} className="inline-block ">
             <SprintCard {...sprint} />
           </div>
         ))}
@@ -23,10 +23,10 @@ const InfiniteScrolling = ({ sprints = [] }) => {
 
       {/* Animation Keyframes */}
       <style>{`
-        @keyframes scroll-left {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
+        // @keyframes scroll-left {
+        //   0% { transform: translateX(0); }
+        //   100% { transform: translateX(-50%); }
+        // }
 
         /* Hide scrollbars globally for this component */
         ::-webkit-scrollbar {

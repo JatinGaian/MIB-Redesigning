@@ -9,7 +9,7 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'bounce-slow': 'bounce 2s infinite',
-        'scroll': 'scroll 30s linear infinite', // Smooth horizontal scrolling
+        'scroll': 'scroll 30s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -23,5 +23,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'), 
+  ],
 };
