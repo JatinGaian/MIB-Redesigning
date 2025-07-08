@@ -5,6 +5,7 @@ import ProfileView from './pages/profile';
 import ReportView from './pages/reportView';
 import SprintView from './pages/sprintView';
 import { useSidebarStore } from './stores/sidebarStore';
+import Dependancyflowchart from './components/dependancyflowchart';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -31,7 +32,8 @@ function App() {
       <div className="flex h-[100vh] w-[100vw] bg-gradient-to-br from-gray-50 to-gray-100">
         <Sidebar />
         <div className="  w-[94vw] p-[1.5vw]">
-          <MainContent />
+          {/* <MainContent /> */}
+          <Dependancyflowchart/>
         </div>
       </div>
     </QueryClientProvider>
