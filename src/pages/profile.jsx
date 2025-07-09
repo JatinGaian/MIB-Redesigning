@@ -1,55 +1,93 @@
-// src/pages/profile.jsx
 import React from 'react';
 import { useApiDataStore } from '../stores/apiDataStore';
-import ApiFetch from '../components/ApiFetch';
+import { useProjects } from '../hooks/useProjects';
+import { useBoards } from '../hooks/useBoards';
+import { useActiveSprints } from '../hooks/useActiveSprints';
+import { useIssues } from '../hooks/useIssues';
+import { shallow } from 'zustand/shallow'; // ✅ import shallow
 
 const ProfileView = () => {
-  const { projects, issues, sprints, boards } = useApiDataStore();
+  // ✅ Use Zustand with shallow to avoid stale state and ensure re-render
+  const { projects, boards, sprints, issues } = useApiDataStore(
+    (state) => ({
+      projects: state.projects,
+      boards: state.boards,
+      sprints: state.sprints,
+      issues: state.issues,
+    }),
+    shallow
+  );
+
+  // React Query hooks (already working fine)
+  const { isLoading: loadingProjects } = useProjects();
+  const { isLoading: loadingBoards } = useBoards();
+  const { isLoading: loadingSprints } = useActiveSprints();
+  const { isLoading: loadingIssues } = useIssues();
+
+  // Render helper
+  const renderItem = (item, i, label) => (
+    <li key={i}>
+      {item.name || item.title || item.displayName || item.id || `${label} ${i + 1}`}
+    </li>
+  );
 
   return (
     <div className="p-[3vh]">
       <h1 className="text-[3vh] font-bold mb-[2vh]">Profile Page</h1>
 
-      {/* 🔍 Debug component */}
-      <ApiFetch />
-
       {/* Projects */}
-      <section className="mb-[3vh]">
+      <section className="mb-[4vh]">
         <h2 className="text-[2.2vh] font-semibold">Projects</h2>
         <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
-          {projects.map((proj, i) => (
-            <li key={i}>{proj.name || `Project ${i + 1}`}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Issues */}
-      <section className="mb-[3vh]">
-        <h2 className="text-[2.2vh] font-semibold">Issues</h2>
-        <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
-          {issues.map((issue, i) => (
-            <li key={i}>{issue.title || `Issue ${i + 1}`}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Sprints */}
-      <section className="mb-[3vh]">
-        <h2 className="text-[2.2vh] font-semibold">Sprints</h2>
-        <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
-          {sprints.map((sprint, i) => (
-            <li key={i}>{sprint.name || `Sprint ${i + 1}`}</li>
-          ))}
+          {loadingProjects ? (
+            <li>Loading projects...</li>
+          ) : projects.length === 0 ? (
+            <li>No projects found.</li>
+          ) : (
+            projects.map((proj, i) => renderItem(proj, i, 'Project'))
+          )}
         </ul>
       </section>
 
       {/* Boards */}
-      <section className="mb-[3vh]">
+      <section className="mb-[4vh]">
         <h2 className="text-[2.2vh] font-semibold">Boards</h2>
         <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
-          {boards.map((board, i) => (
-            <li key={i}>{board.name || `Board ${i + 1}`}</li>
-          ))}
+          {loadingBoards ? (
+            <li>Loading boards...</li>
+          ) : boards.length === 0 ? (
+            <li>No boards found.</li>
+          ) : (
+            boards.map((board, i) => renderItem(board, i, 'Board'))
+          )}
+        </ul>
+      </section>
+
+      {/* Active Sprints */}
+      <section className="mb-[4vh]">
+        <h2 className="text-[2.2vh] font-semibold">Active Sprints</h2>
+        <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
+          {loadingSprints ? (
+            <li>Loading sprints...</li>
+          ) : sprints.length === 0 ? (
+            <li>No sprints found.</li>
+          ) : (
+            sprints.map((sprint, i) => renderItem(sprint, i, 'Sprint'))
+          )}
+        </ul>
+      </section>
+
+      {/* Issues */}
+      <section>
+        <h2 className="text-[2.2vh] font-semibold">Issues</h2>
+        <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
+          {loadingIssues ? (
+            <li>Loading issues...</li>
+          ) : issues.length === 0 ? (
+            <li>No issues found.</li>
+          ) : (
+            issues.map((issue, i) => renderItem(issue, i, 'Issue'))
+          )}
         </ul>
       </section>
     </div>

@@ -9,7 +9,7 @@ import ReportView from './pages/reportView';
 import SprintView from './pages/sprintView';
 
 import { useSidebarStore } from './stores/sidebarStore';
-import { useFetchAllData } from './services/api';
+// import { useFetchAllData } from './services/api';
 
 // Create a query client
 const queryClient = new QueryClient({

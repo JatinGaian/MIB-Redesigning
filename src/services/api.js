@@ -1,108 +1,124 @@
-// src/api/api.js
+// // src/services/api.js
 import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
-import { useApiDataStore } from '../stores/apiDataStore';
-const Bearer_token_for_MIB = import.meta.env.VITE_Bearer_token_for_MIB
+
+const Bearer_token_for_MIB = import.meta.env.VITE_Bearer_token_for_MIB;
+
 const headers = {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${Bearer_token_for_MIB}`  // Set the token correctly in the headers
-        };
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${Bearer_token_for_MIB}`,
+};
 
-
+// Optional: Dummy JSONPlaceholder instance
 const api = axios.create({
-  baseURL: 'https://jsonplaceholder.typicode.com', // used only for dummy fallback
+  baseURL: 'https://jsonplaceholder.typicode.com',
   timeout: 5000,
 });
 
-// Utility fetcher
-const fetcher = async (schemaId) => {
-  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`
-  try {
-    const response = await axios.post(url,
-    {
-      headers:headers
-    }
+// // ✅ Real API call for fetching projects
+// export const fetchProjects = async () => {
+//   const schemaId = import.meta.env.VITE_PROJECTS_LEADS_SCHEMA;
+
+//   const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+//   const response = await axios.post(
+//     url,
+//     {
+//       dbType: 'TIDB',
+//       filter: {}, // Optional filter
+//     },
+//     { headers }
+//   );
+
+//   console.log(' Projects API response:', response.data);
+//   return response.data || [];
+// };
+
+//  Optional: Dummy API for user
+
+
+
+// src/services/api.js
+// import axios from 'axios';
+
+// const Bearer_token_for_MIB = import.meta.env.VITE_Bearer_token_for_MIB;
+
+// const headers = {
+//   'Content-Type': 'application/json',
+//   'Authorization': `Bearer ${Bearer_token_for_MIB}`,
+// };
+
+//  Fetch Projects
+export const fetchProjects = async () => {
+  const schemaId = import.meta.env.VITE_PROJECTS_LEADS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
   );
-console.log("fetcher function data",response?.data)
+
+  console.log(' Projects API response:', response.data);
   return response.data;
-  } catch (error) {
-    console.log(error);
-    
-  }
 };
 
-// Fetch a Single User 
+//  Fetch Boards
+export const fetchBoards = async () => {
+  const schemaId = import.meta.env.VITE_ALL_BOARDS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Boards API response:', response.data);
+  return response.data;
+};
+
+//  Fetch Issues
+export const fetchIssues = async () => {
+  const schemaId = import.meta.env.VITE_ALL_ISSUES_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Issues API response:', response.data);
+  return response.data;
+};
+
+//  Fetch Active Sprints
+export const fetchActiveSprints = async () => {
+  const schemaId = import.meta.env.VITE_ALL_SPRINTS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB',
+       filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Active Sprints API response:', response.data);
+  return response.data;
+};
 export const fetchUser = async (id = 1) => {
   const response = await api.get(`/users/${id}`);
   return response.data;
 };
 
-// Fetch Sample Posts 
+//  Optional: Dummy API for posts
 export const fetchPosts = async () => {
   const response = await api.get('/posts?_limit=5');
   return response.data;
 };
 
-export const fetchProjects = async (schemaId) => {
-  console.log("inside fetch project");
-  
-  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`
-  const response = await  axios.post(url,
-    {
-      headers:headers
-    })
-  return response.data;
-};
-
-
-//  Custom hook to fetch & store all 4 entities in Zustand
-export const useFetchAllData = () => {
-  console.log("insde usefetc all data");
-  
-  const setAllData = useApiDataStore((state) => state.setAllData);
-
-  // Projects
-  useQuery({
-    queryKey: ['projects'],
-    queryFn: () => fetcher(import.meta.env.VITE_PROJECTS_LEADS_SCHEMA),
-    
-  });
-
-  // Boards
-  useQuery({
-    queryKey: ['boards'],
-    queryFn: () => fetcher(import.meta.env.VITE_ALL_BOARDS_SCHEMA),
-    onSuccess: (data) => {
-      console.log("✅ Boards:", data);
-      setAllData('boards', data);
-    },
-    onError: (err) => console.error(" Boards fetch error:", err),
-  });
-
-  // Sprints
-  useQuery({
-    queryKey: ['sprints'],
-    queryFn: () => fetcher(import.meta.env.VITE_ALL_SPRINTS_SCHEMA),
-    onSuccess: (data) => {
-      console.log("✅ Sprints:", data);
-      setAllData('sprints', data);
-    },
-    onError: (err) => console.error(" Sprints fetch error:", err),
-  });
-
-  // Issues
-  useQuery({
-    queryKey: ['issues'],
-    queryFn: () => fetcher(import.meta.env.VITE_ALL_ISSUES_SCHEMA),
-    onSuccess: (data) => {
-      console.log("✅ Issues:", data);
-      setAllData('issues', data);
-    },
-    onError: (err) => console.error("❌ Issues fetch error:", err),
-  });
-};
-
-// 🔁 Optional: Mock sprints for demo purposes
+//  Mock sprints for demo
 export const fetchSprints = async () => {
   const allAssignees = [
     { name: 'vishwas', image: 'man' },
@@ -114,9 +130,11 @@ export const fetchSprints = async () => {
     { name: 'emma', image: 'woman' },
     { name: 'leo', image: 'gamer' },
   ];
+
   return Array.from({ length: 10 }, (_, i) => {
     const numAssignees = Math.floor(Math.random() * 7) + 2;
     const shuffled = allAssignees.sort(() => 0.5 - Math.random());
+
     return {
       id: i + 1,
       name: `Sprint ${i + 1}`,
