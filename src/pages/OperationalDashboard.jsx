@@ -4,6 +4,8 @@ import SprintPlan from '../components/Operational_dashboard_component/sprint_pla
 import InfiniteScrolling from '../components/infinite_scrolling';
 import { useSprints } from '../hooks/useSprints';
 import { useSprintStore } from '../stores/sprintStore';
+import DependencyFlowChart from '../components/dependancyflowchart';
+import GanttChart from '../components/Ganttchart';
 
 const OperationalDashboard = () => {
   const { data: sprints, isLoading, isError } = useSprints();
@@ -12,6 +14,7 @@ const OperationalDashboard = () => {
   useEffect(() => {
     if (sprints) setSprints(sprints);
   }, [sprints, setSprints]);
+
 
   if (isLoading) return <div>Loading sprints...</div>;
   if (isError) return <div>Error loading sprints.</div>;
@@ -25,6 +28,8 @@ const OperationalDashboard = () => {
       <div className="mt-[3vh] flex justify-center">
         <InfiniteScrolling sprints={sprints} />
       </div>
+      {/* <DependencyFlowChart/> */}
+      
     </div>
   );
 };

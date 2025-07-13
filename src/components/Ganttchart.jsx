@@ -1,190 +1,3 @@
-// import React, { useCallback } from 'react';
-// import ReactFlow, {
-//   Background,
-//   Controls,
-//   MiniMap,
-//   useNodesState,
-//   useEdgesState,
-//   addEdge,
-//   ConnectionLineType,
-// } from 'reactflow';
-// import 'reactflow/dist/style.css';
-// import dagre from 'dagre';
-
-// // Sprint and styling config
-// const sprintData = [
-//   { id: 'SP1', label: 'Sprint 1', team: 'Core', blockers: true, link: 'https://jira.example.com/SP1' },
-//   { id: 'SP2', label: 'Sprint 2', team: 'API', blockers: false, link: 'https://jira.example.com/SP2' },
-//   { id: 'SP3', label: 'Sprint 3', team: 'UI', blockers: true, link: 'https://jira.example.com/SP3' },
-//   { id: 'SP4', label: 'Sprint 4', team: 'QA', blockers: false, link: 'https://jira.example.com/SP4' },
-//   { id: 'SP5', label: 'Sprint 5', team: 'DevOps', blockers: false, link: 'https://jira.example.com/SP5' },
-//   { id: 'SP6', label: 'Sprint 6', team: 'UX', blockers: true, link: 'https://jira.example.com/SP6' },
-//   { id: 'SP8', label: 'Sprint 8', team: 'Security', blockers: false, link: 'https://jira.example.com/SP8' },
-// ];
-
-// const teamColors = {
-//   Core: '#607d8b',
-//   API: '#03a9f4',
-//   UI: '#9c27b0',
-//   QA: '#4caf50',
-//   DevOps: '#795548',
-//   UX: '#ff9800',
-//   Security: '#e91e63',
-// };
-
-// const nodeWidth = 200;
-// const nodeHeight = 100;
-
-// // Helper to calculate age in weeks
-// const getWeeksPending = (createdAt) => {
-//   const created = new Date(createdAt);
-//   const now = new Date();
-//   const diffMs = now - created;
-//   return Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
-// };
-
-// // Create sprint cards (nodes)
-// const createNodes = () =>
-//   sprintData.map((sprint) => ({
-//     id: sprint.id,
-//     data: {
-//       label: (
-//         <div style={{ display: 'flex', alignItems: 'center', gap: 8 ,justifyContent:'space-between'}}>
-//           {sprint.blockers && <span title="Blocker">⚠️</span>}
-//           <strong>{sprint.label}</strong>
-//           {sprint.link && (
-//             <a href={sprint.link} target="_blank" rel="noopener noreferrer" title="Linked Jira Issue">
-//               🔗
-//             </a>
-//           )}
-//         </div>
-//       ),
-//     },
-//     style: {
-//       background: teamColors[sprint.team],
-//       color: '#fff',
-//       padding: 10,
-//       borderRadius: 8,
-//       width: nodeWidth,
-//       boxShadow: sprint.blockers
-//         ? '0 0 10px rgba(255,0,0,0.6)'
-//         : '0 2px 6px rgba(0,0,0,0.2)',
-//     },
-//     position: { x: 0, y: 0 },
-//   }));
-
-// // Define sprint dependencies (edges)
-// const edges = [
-//   {
-//     id: 'SP1-SP2',
-//     source: 'SP1',
-//     target: 'SP2',
-//     animated: true,
-//     type: '',
-//     createdAt: '2025-06-10',
-//   },
-//   {
-//     id: 'SP1-SP6',
-//     source: 'SP1',
-//     target: 'SP6',
-//     animated: true,
-//     type: '',
-//     createdAt: '2025-06-18',
-//   },
-//   {
-//     id: 'SP1-SP8',
-//     source: 'SP1',
-//     target: 'SP8',
-//     animated: true,
-//     type: '',
-//     createdAt: '2025-07-02',
-//   },
-//   {
-//     id: 'SP3-SP4',
-//     source: 'SP3',
-//     target: 'SP4',
-//     animated: true,
-//     type: '',
-//     createdAt: '2025-06-25',
-//   },
-// ];
-
-// // Position everything using Dagre layout
-// const getLayoutedElements = (nodes, edges, direction = 'LR') => {
-//   const dagreGraph = new dagre.graphlib.Graph();
-//   dagreGraph.setDefaultEdgeLabel(() => ({}));
-//   dagreGraph.setGraph({ rankdir: direction, ranksep: 800 });
-
-
-//   nodes.forEach((node) => {
-//     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-//   });
-
-//   edges.forEach((edge) => {
-//     dagreGraph.setEdge(edge.source, edge.target);
-//   });
-
-//   dagre.layout(dagreGraph);
-
-//   const isHorizontal = direction === 'LR';
-
-//   const layoutedNodes = nodes.map((node) => {
-//     const { x, y } = dagreGraph.node(node.id);
-//     return {
-//       ...node,
-//       position: { x, y },
-//       targetPosition: isHorizontal ? 'left' : 'top',
-//       sourcePosition: isHorizontal ? 'right' : 'bottom',
-//     };
-//   });
-
-//   const layoutedEdges = edges.map((edge) => ({
-//     ...edge,
-//     label: edge.createdAt
-//       ? `Pending ${getWeeksPending(edge.createdAt)} week(s)`
-//       : '',
-//   }));
-
-//   return { nodes: layoutedNodes, edges: layoutedEdges };
-// };
-
-// // Main component
-// const DependencyFlowChart = () => {
-//   const { nodes, edges: layoutedEdges } = getLayoutedElements(createNodes(), edges, 'LR');
-//   const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
-//   const [edgesState, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-
-//   const onConnect = useCallback(
-//     (params) =>
-//       setEdges((eds) =>
-//         addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)
-//       ),
-//     []
-//   );
-
-//   return (
-//     <div style={{ height: '40vh', width: '100vw' }}>
-//       <ReactFlow
-//         nodes={nodesState}
-//         edges={edgesState}
-//         onNodesChange={onNodesChange}
-//         onEdgesChange={onEdgesChange}
-//         onConnect={onConnect}
-//         fitView
-//         connectionLineType={ConnectionLineType.SmoothStep}
-//       >
-//         <Controls />
-//         <Background color="#f0f0f0" gap={16} />
-//       </ReactFlow>
-//     </div>
-//   );
-// };
-
-// export default DependencyFlowChart;
-
-
-
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   Link,
@@ -209,21 +22,76 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const timelineRef = useRef(null);
   const sidebarRef = useRef(null);
 
+  // Get task end date
+  const getTaskEndDate = (task) => {
+    const endDate = new Date(task.startDate);
+    endDate.setDate(task.startDate.getDate() + task.duration);
+    return endDate;
+  };
+
+  // Get current week range (Monday to Sunday)
+  const getCurrentWeekRange = () => {
+    const today = new Date();
+    const currentDay = today.getDay();
+    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    // Monday to Monday (next Monday)
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+    nextMonday.setHours(0, 0, 0, 0);
+
+    return { start: monday, end: nextMonday };
+  };
+
+  // Filter tasks for Days view (current week only)
+  const getFilteredTasks = () => {
+    if (viewMode === "Days") {
+      const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
+      
+      return tasks.filter(task => {
+        const taskEndDate = getTaskEndDate(task);
+        // Show task if it overlaps with current week (starts before week ends AND ends after week starts)
+        return task.startDate <= weekEnd && taskEndDate >= weekStart;
+      });
+    }
+    return tasks;
+  };
+
+  // Get date range for Days view or regular view
+  const getDateRange = () => {
+    if (viewMode === "Days") {
+      // Show only current week (Monday to Sunday)
+      return getCurrentWeekRange();
+    }
+    return { start: startDate, end: endDate };
+  };
+
+  const filteredTasks = getFilteredTasks();
+  const dateRange = getDateRange();
+  const viewStartDate = dateRange.start;
+  const viewEndDate = dateRange.end;
+
   const daysDiff = Math.ceil(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (viewEndDate.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   // Dynamic day width based on view mode and zoom
   const getBaseDayWidth = () => {
     switch (viewMode) {
+      case "Days":
+        return 15; // Much wider for daily view
       case "Weeks":
-        return 1.5;
+        return 2;
       case "Months":
-        return 1;
-      case "Quarters":
-        return 0.8;
-      default:
         return 1.5;
+      case "Quarters":
+        return 1;
+      default:
+        return 2;
     }
   };
 
@@ -237,9 +105,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Auto-scroll to today's line on component mount
   useEffect(() => {
     const scrollToToday = () => {
+      // Only auto-scroll on initial load, not on every render
+      if (viewMode !== "Days") return;
+      
       const today = new Date();
       const todayDays = Math.ceil(
-        (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+        (today.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
       );
       const todayPosition = todayDays * dayWidth;
 
@@ -254,10 +125,10 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
       }
     };
 
-    // Delay to ensure DOM is ready
+    // Only auto-scroll once when component mounts or view mode changes to Days
     const timer = setTimeout(scrollToToday, 100);
     return () => clearTimeout(timer);
-  }, [dayWidth, startDate]);
+  }, [viewMode]); // Remove dayWidth and viewStartDate dependencies
 
   // Handle mouse wheel for zooming
   useEffect(() => {
@@ -326,13 +197,79 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
 
   // Calculate task positions
   const getTaskPosition = (task) => {
-    const startDays = Math.ceil(
-      (task.startDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    const startDays = Math.floor(
+      (task.startDate.getTime() - viewStartDate.getTime()) /
+        (1000 * 60 * 60 * 24)
     );
+    
+    if (viewMode === "Days") {
+      const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
+      const taskEndDate = getTaskEndDate(task);
+      
+      // Clip task to current week boundaries
+      const clippedStart = task.startDate < weekStart ? weekStart : task.startDate;
+      const clippedEnd = taskEndDate > weekEnd ? weekEnd : taskEndDate;
+      
+      const clippedStartDays = Math.floor(
+        (clippedStart.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const clippedDuration = Math.floor(
+        (clippedEnd.getTime() - clippedStart.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      return {
+        x: clippedStartDays * dayWidth,
+        width: Math.max(clippedDuration * dayWidth, dayWidth * 0.5), // Minimum width
+        isClipped: task.startDate < weekStart || taskEndDate > weekEnd
+      };
+    }
+    
     return {
       x: startDays * dayWidth,
       width: task.duration * dayWidth,
+      isClipped: false
     };
+  };
+
+  // Check if connection has scheduling conflict
+  const hasSchedulingConflict = (fromTask, toTask) => {
+    const fromEndDate = getTaskEndDate(fromTask);
+    const toStartDate = toTask.startDate;
+    return fromEndDate > toStartDate;
+  };
+
+  // Check if a task has any scheduling conflicts (incoming or outgoing)
+  const hasTaskConflicts = (task) => {
+    // Check outgoing dependencies (this task depends on others)
+    const hasOutgoingConflicts = task.dependencies.some((depId) => {
+      const depTask = tasks.find((t) => t.id === depId);
+      return depTask && hasSchedulingConflict(depTask, task);
+    });
+
+    // Check incoming dependencies (other tasks depend on this one)
+    const hasIncomingConflicts = filteredTasks.some(
+      (otherTask) =>
+        otherTask.dependencies.includes(task.id) &&
+        hasSchedulingConflict(task, otherTask)
+    );
+
+    return hasOutgoingConflicts || hasIncomingConflicts;
+  };
+
+  // Handle link click to navigate to task page
+  const handleLinkClick = (task, e) => {
+    e.stopPropagation(); // Prevent task selection
+
+    // Extract task ID from name (e.g., "MIB-18" from "MIB-18 MIB - Mobius IntelliBoard")
+    const taskIdMatch = task.name.match(/^([A-Z]+-\d+)/);
+    const taskId = taskIdMatch ? taskIdMatch[1] : task.id;
+
+    // For now, show alert - replace with actual navigation
+    alert(`Navigating to ${taskId} page...`);
+
+    // Replace with actual navigation:
+    // window.open(`/tasks/${taskId}`, '_blank');
+    // or navigate(`/sprints/${task.id}`);
   };
 
   // Get task color based on type
@@ -347,6 +284,10 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
       mobile: "bg-indigo-500",
       ai: "bg-cyan-500",
       automation: "bg-yellow-500",
+      backend: "bg-gray-600",
+      planning: "bg-teal-500",
+      testing: "bg-lime-500",
+      review: "bg-rose-500",
     };
     return colors[type] || "bg-gray-500";
   };
@@ -354,10 +295,13 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Generate date range based on view mode with proper alignment
   const generateDateRange = () => {
     const dates = [];
-    const current = new Date(startDate);
+    const current = new Date(viewStartDate);
 
-    while (current <= endDate) {
-      if (viewMode === "Weeks") {
+    while (current <= viewEndDate) {
+      if (viewMode === "Days") {
+        dates.push(new Date(current));
+        current.setDate(current.getDate() + 1);
+      } else if (viewMode === "Weeks") {
         dates.push(new Date(current));
         current.setDate(current.getDate() + 1);
       } else if (viewMode === "Months") {
@@ -380,9 +324,9 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Generate all days for grid lines (regardless of view mode)
   const generateAllDays = () => {
     const dates = [];
-    const current = new Date(startDate);
+    const current = new Date(viewStartDate);
 
-    while (current <= endDate) {
+    while (current <= viewEndDate) {
       dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
@@ -391,9 +335,30 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
 
   // Generate months for header with proper width calculation
   const generateMonthRange = () => {
+    if (viewMode === "Days") {
+      // For days view, show the current week as a single "month"
+      const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
+      return [
+        {
+          date: weekStart,
+          daysInRange: 7,
+          startDayFromProjectStart: 0,
+          width: 7 * dayWidth,
+        },
+      ];
+    }
+
     const months = [];
-    const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-    const end = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
+    const current = new Date(
+      viewStartDate.getFullYear(),
+      viewStartDate.getMonth(),
+      1
+    );
+    const end = new Date(
+      viewEndDate.getFullYear(),
+      viewEndDate.getMonth() + 1,
+      0
+    );
 
     while (current <= end) {
       const monthStart = new Date(current);
@@ -404,8 +369,9 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
       );
 
       // Calculate actual days in this month that fall within our date range
-      const actualStart = monthStart < startDate ? startDate : monthStart;
-      const actualEnd = monthEnd > endDate ? endDate : monthEnd;
+      const actualStart =
+        monthStart < viewStartDate ? viewStartDate : monthStart;
+      const actualEnd = monthEnd > viewEndDate ? viewEndDate : monthEnd;
 
       const daysInRange =
         Math.ceil(
@@ -413,7 +379,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
         ) + 1;
 
       const startDayFromProjectStart = Math.ceil(
-        (actualStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+        (actualStart.getTime() - viewStartDate.getTime()) /
+          (1000 * 60 * 60 * 24)
       );
 
       months.push({
@@ -451,8 +418,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
 
     // Adjust control points based on distance and direction
     const controlPointOffset = Math.min(
-      Math.abs(deltaX) * 0.3,
-      distance * 0.25
+      Math.abs(deltaX) * 0.25,
+      distance * 0.2
     );
     const controlPoint1X = fromX + controlPointOffset;
     const controlPoint1Y =
@@ -467,8 +434,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Calculate today line position
   const getTodayPosition = () => {
     const today = new Date();
-    const todayDays = Math.ceil(
-      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    const todayDays = Math.floor(
+      (today.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     return todayDays * dayWidth;
   };
@@ -479,7 +446,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   };
 
   const monthRange = generateMonthRange();
-  const dateRange = generateDateRange();
+  const dateRangeForHeader = generateDateRange();
   const allDays = generateAllDays();
 
   // Zoom controls
@@ -487,7 +454,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(0.5, prev - 0.2));
 
   return (
-    <div className="w-full h-full bg-gray-50 text-gray-900 overflow-hidden flex flex-col border  border-gray-300">
+    <div className="w-full h-full bg-gray-50 text-gray-900 overflow-hidden flex flex-col border border-gray-300">
       {/* Header */}
       <div
         className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0"
@@ -515,7 +482,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
               className="flex items-center bg-gray-100 rounded-lg"
               style={{ gap: `${0.2}vw`, padding: `${0.2}vw` }}
             >
-              {["Weeks", "Months", "Quarters"].map((mode) => (
+              {["Days", "Weeks", "Months", "Quarters"].map((mode) => (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
@@ -585,7 +552,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 style={{ fontSize: `${0.9}vw` }}
                 className="font-semibold text-gray-800"
               >
-                Sprints
+                Sprints {viewMode === "Days" && "(Current Week)"}
               </span>
             </div>
           </div>
@@ -595,10 +562,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
             ref={sidebarRef}
             className="flex-1 overflow-y-auto scrollbar-hide"
           >
-            {tasks.map((task, index) => (
+            {filteredTasks.map((task, index) => (
               <div
                 key={task.id}
                 className={`border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
+                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                } ${
                   selectedTask === task.id
                     ? "bg-blue-50 border-blue-200"
                     : "hover:bg-gray-50"
@@ -652,38 +621,68 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                       fontSize: `${0.8}vw`,
                     }}
                   >
-                    {month.date.toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
+                    {viewMode === "Days"
+                      ? `Week of ${month.date.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}`
+                      : month.date.toLocaleDateString("en-US", {
+                          month: "long",
+                          year: "numeric",
+                        })}
                   </div>
                 ))}
               </div>
 
               {/* Day headers */}
-              <div className="flex" style={{ height: "50%" }}>
-                {dateRange.map((date, index) => {
+              <div className="flex relative" style={{ height: "50%" }}>
+                {dateRangeForHeader.map((date, index) => {
                   const dayPosition = Math.ceil(
-                    (date.getTime() - startDate.getTime()) /
+                    (date.getTime() - viewStartDate.getTime()) /
                       (1000 * 60 * 60 * 24)
                   );
+                  const isMonday = date.getDay() === 1;
                   return (
                     <div
                       key={index}
-                      className="border-r border-gray-100 flex flex-col items-center justify-center text-gray-600"
+                      className="border-r border-gray-100 flex flex-col items-center justify-center text-gray-600 absolute"
                       style={{
-                        width: `${
-                          viewMode === "Weeks" ? dayWidth : dayWidth * 5
-                        }vw`,
-                        minWidth: `${
-                          viewMode === "Weeks" ? dayWidth : dayWidth * 5
-                        }vw`,
+                        width: `${dayWidth}vw`,
+                        minWidth: `${dayWidth}vw`,
                         fontSize: `${0.7}vw`,
-                        position: "absolute",
                         left: `${dayPosition * dayWidth}vw`,
+                        height: "100%",
                       }}
                     >
-                      <div className="font-medium">{date.getDate()}</div>
+                      <div className="font-medium">
+                        {viewMode === "Days"
+                          ? date.toLocaleDateString("en-US", {
+                              weekday: "short",
+                            })
+                          : date.getDate()}
+                      </div>
+                      {viewMode === "Days" && (
+                        <div
+                          style={{ fontSize: `${0.6}vw` }}
+                          className="text-gray-500"
+                        >
+                          {date.getDate()}
+                        </div>
+                      )}
+                      {isMonday && viewMode === "Days" && (
+                        <div
+                          className="absolute bg-blue-500 text-white rounded shadow-md z-30"
+                          style={{
+                            top: `${-0.3}vh`,
+                            left: `${-1}vw`,
+                            padding: `${0.2}vh ${0.5}vw`,
+                            fontSize: `${0.6}vw`,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Mon
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -694,57 +693,61 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
           {/* Chart content */}
           <div
             ref={chartRef}
-            className="flex-1 overflow-auto relative scrollbar-hide"
+            className="flex-1 relative overflow-auto scrollbar-hide"
             onMouseMove={handleMouseMove}
           >
             <div
               className="relative"
               style={{
                 width: `${daysDiff * dayWidth}vw`,
-                height: `${tasks.length * (taskHeight + taskPadding)}vh`,
+                height: `${
+                  filteredTasks.length * (taskHeight + taskPadding)
+                }vh`,
               }}
             >
               {/* Grid background */}
               <div className="absolute inset-0 pointer-events-none">
+                {/* Alternating row backgrounds */}
+                {filteredTasks.map((_, index) => (
+                  <div
+                    key={`row-bg-${index}`}
+                    className={`absolute w-full ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    }`}
+                    style={{
+                      top: `${index * (taskHeight + taskPadding)}vh`,
+                      height: `${taskHeight + taskPadding}vh`,
+                    }}
+                  />
+                ))}
+
                 {/* Vertical grid lines - using all days for proper alignment */}
-                {allDays.map((date, index) => (
+                {Array.from({ length: daysDiff }, (_, index) => {
+                  const date = new Date(viewStartDate);
+                  date.setDate(viewStartDate.getDate() + index);
+                  const isMonday = date.getDay() === 1;
+                  const isToday = date.toDateString() === new Date().toDateString();
+                  
+                  return (
                   <div
                     key={index}
                     className={`absolute h-full ${
-                      date.getDay() === 1
+                      isToday
+                        ? "bg-red-500"
+                        : isMonday
                         ? "bg-blue-300"
                         : "border-r border-gray-100"
                     }`}
                     style={{
                       left: `${index * dayWidth}vw`,
-                      width: date.getDay() === 1 ? `${0.1}vw` : `${0.05}vw`,
+                      width: isToday ? `${0.15}vw` : isMonday ? `${0.15}vw` : `${0.05}vw`,
                     }}
                   />
-                ))}
-
-                {/* Today line */}
-                <div
-                  className="absolute h-full bg-red-500 z-30"
-                  style={{
-                    left: `${getTodayPosition()}vw`,
-                    width: `${0.2}vw`,
-                  }}
-                >
-                  <div
-                    className="absolute bg-red-500 text-white rounded shadow-md"
-                    style={{
-                      top: `${-0.3}vh`,
-                      left: `${-1}vw`,
-                      padding: `${0.2}vh ${0.5}vw`,
-                      fontSize: `${0.6}vw`,
-                    }}
-                  >
-                    Today
-                  </div>
-                </div>
+                  );
+                })}
 
                 {/* Horizontal grid lines */}
-                {tasks.map((_, index) => (
+                {filteredTasks.map((_, index) => (
                   <div
                     key={index}
                     className="absolute w-full border-b border-gray-100"
@@ -760,22 +763,26 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 className="absolute inset-0 pointer-events-none z-10"
                 style={{
                   width: `${daysDiff * dayWidth}vw`,
-                  height: `${tasks.length * (taskHeight + taskPadding)}vh`,
+                  height: `${
+                    filteredTasks.length * (taskHeight + taskPadding)
+                  }vh`,
                 }}
                 viewBox={`0 0 ${
                   (daysDiff * dayWidth * window.innerWidth) / 100
                 } ${
-                  (tasks.length *
+                  (filteredTasks.length *
                     (taskHeight + taskPadding) *
                     window.innerHeight) /
                   100
                 }`}
                 preserveAspectRatio="xMidYMid meet"
               >
-                {tasks.map((task, taskIndex) => {
+                {filteredTasks.map((task, taskIndex) => {
                   return task.dependencies.map((depId) => {
                     const depTask = tasks.find((t) => t.id === depId);
-                    const depIndex = tasks.findIndex((t) => t.id === depId);
+                    const depIndex = filteredTasks.findIndex(
+                      (t) => t.id === depId
+                    );
                     if (depTask && depIndex !== -1) {
                       const pathData = getConnectionPath(
                         depTask,
@@ -783,12 +790,13 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                         depIndex,
                         taskIndex
                       );
+                      const hasConflict = hasSchedulingConflict(depTask, task);
                       return (
                         <path
                           key={`curved-${task.id}-${depId}`}
                           d={pathData}
-                          stroke="#3b82f6"
-                          strokeWidth="1.2"
+                          stroke={hasConflict ? "#ef4444" : "#3b82f6"}
+                          strokeWidth="0.12vw"
                           fill="none"
                           opacity="0.8"
                           style={{
@@ -805,12 +813,14 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
 
               {/* Task bars */}
               <div className="relative z-10">
-                {tasks.map((task, index) => {
+                {filteredTasks.map((task, index) => {
                   const position = getTaskPosition(task);
+                  const hasConflicts = hasTaskConflicts(task);
+
                   return (
                     <div
                       key={task.id}
-                      className={`absolute rounded cursor-pointer transition-all duration-200 hover:shadow-md ${getTaskColor(
+                      className={`absolute rounded cursor-pointer transition-all duration-200 hover:shadow-md flex items-center justify-between ${getTaskColor(
                         task.type
                       )} ${
                         selectedTask === task.id ? "ring-2 ring-blue-400" : ""
@@ -822,21 +832,43 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                         }vh`,
                         width: `${position.width}vw`,
                         height: `${taskHeight - 1}vh`,
+                        padding: `0 ${0.5}vw`,
                       }}
                       onClick={() => setSelectedTask(task.id)}
                       onMouseEnter={() => setHoveredTask(task)}
                       onMouseLeave={() => setHoveredTask(null)}
                     >
-                      <div
-                        className="h-full flex items-center"
-                        style={{ padding: `0 ${0.5}vw` }}
+                      {/* Task name */}
+                      <span
+                        style={{ fontSize: `${0.7}vw` }}
+                        className="font-medium text-white truncate flex-1"
                       >
-                        <span
-                          style={{ fontSize: `${0.7}vw` }}
-                          className="font-medium text-white truncate"
-                        >
-                          {task.name}
-                        </span>
+                        {task.name}
+                      </span>
+
+                      {/* Icons container */}
+                      <div
+                        className="flex items-center"
+                        style={{ gap: `${0.3}vw` }}
+                      >
+                        {/* Alert symbol for conflicts */}
+                        {hasConflicts && (
+                          <AlertTriangle
+                            style={{
+                              width: `${0.8}vw`,
+                              height: `${0.8}vw`,
+                            }}
+                            className="text-white"
+                          />
+                        )}
+                        <Link
+                          style={{
+                            width: `${0.8}vw`,
+                            height: `${0.8}vw`,
+                          }}
+                          className="text-white"
+                          onClick={(e) => handleLinkClick(task, e)}
+                        />
                       </div>
                     </div>
                   );
@@ -889,10 +921,29 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 </div>
               </div>
               <div>
+                <span className="text-gray-400">End:</span>
+                <div className="font-medium">
+                  {getTaskEndDate(hoveredTask).toLocaleDateString()}
+                </div>
+              </div>
+              <div>
                 <span className="text-gray-400">Progress:</span>
                 <div className="font-medium">{hoveredTask.progress}%</div>
               </div>
             </div>
+            {hasTaskConflicts(hoveredTask) && (
+              <div style={{ fontSize: `${0.7}vw` }} className="text-red-400">
+                <AlertTriangle
+                  style={{
+                    width: `${0.8}vw`,
+                    height: `${0.8}vw`,
+                    display: "inline",
+                  }}
+                  className="mr-1"
+                />
+                Scheduling conflicts detected
+              </div>
+            )}
             {hoveredTask.dependencies.length > 0 && (
               <div style={{ fontSize: `${0.7}vw` }}>
                 <span className="text-gray-400">Dependencies:</span>

@@ -11,7 +11,7 @@ import UserLogo from '../assets/sidebar_icons/user.png';
 
 const navItems = [
   { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard' },
-  { key: 'profile', icon: profileIcon, alt: 'Profile' },
+  { key: 'SprintDependencyView', icon: reportIcon, alt: 'SprintDependencyView' },
   { key: 'report', icon: reportIcon, alt: 'Report View' },
   { key: 'sprint', icon: sprintIcon, alt: 'Sprint View' },
 ];
