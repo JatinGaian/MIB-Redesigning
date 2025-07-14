@@ -3,6 +3,7 @@ import { useSidebarStore } from '../stores/sidebarStore';
 
 import operationalIcon from '../assets/sidebar_icons/operational_dashboard.png';
 import profileIcon from '../assets/sidebar_icons/profile.png';
+import ganttChart from "../assets/sidebar_icons/gantt-chart.png"
 import reportIcon from '../assets/sidebar_icons/report_view.png';
 import sprintIcon from '../assets/sidebar_icons/sprint_view.png';
 import MobiusLogo from '../assets/sidebar_icons/MOBIUS.png';
@@ -11,9 +12,11 @@ import UserLogo from '../assets/sidebar_icons/user.png';
 
 const navItems = [
   { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard' },
-  { key: 'SprintDependencyView', icon: reportIcon, alt: 'SprintDependencyView' },
+  { key: 'SprintDependencyView', icon: ganttChart, alt: 'SprintDependencyView' },
+  { key: 'profile', icon: profileIcon, alt: 'profile view' },
   { key: 'report', icon: reportIcon, alt: 'Report View' },
   { key: 'sprint', icon: sprintIcon, alt: 'Sprint View' },
+
 ];
 
 export default function Sidebar() {

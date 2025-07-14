@@ -206,9 +206,7 @@ export default function SprintDependencyView() {
       progress: 70,
       category: 'Sprints'
     },
-  
-    // 🔜 Sprints from August 2025 (next month)
-    {
+      {
       id: 'sprint-21',
       name: 'MIB-530 Security Patch Deployment',
       startDate: new Date('2025-08-06'),

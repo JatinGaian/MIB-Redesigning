@@ -1,22 +1,125 @@
+// // src/services/api.js
 import axios from 'axios';
 
+const Bearer_token_for_MIB = import.meta.env.VITE_Bearer_token_for_MIB;
+
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${Bearer_token_for_MIB}`,
+};
+
+// Optional: Dummy JSONPlaceholder instance
 const api = axios.create({
   baseURL: 'https://jsonplaceholder.typicode.com',
   timeout: 5000,
 });
-// Fetch a Single User
+
+// // ✅ Real API call for fetching projects
+// export const fetchProjects = async () => {
+//   const schemaId = import.meta.env.VITE_PROJECTS_LEADS_SCHEMA;
+
+//   const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+//   const response = await axios.post(
+//     url,
+//     {
+//       dbType: 'TIDB',
+//       filter: {}, // Optional filter
+//     },
+//     { headers }
+//   );
+
+//   console.log(' Projects API response:', response.data);
+//   return response.data || [];
+// };
+
+//  Optional: Dummy API for user
+
+
+
+// src/services/api.js
+// import axios from 'axios';
+
+// const Bearer_token_for_MIB = import.meta.env.VITE_Bearer_token_for_MIB;
+
+// const headers = {
+//   'Content-Type': 'application/json',
+//   'Authorization': `Bearer ${Bearer_token_for_MIB}`,
+// };
+
+//  Fetch Projects
+export const fetchProjects = async () => {
+  const schemaId = import.meta.env.VITE_PROJECTS_LEADS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Projects API response:', response.data);
+  return response.data;
+};
+
+//  Fetch Boards
+export const fetchBoards = async () => {
+  const schemaId = import.meta.env.VITE_ALL_BOARDS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Boards API response:', response.data);
+  return response.data;
+};
+
+//  Fetch Issues
+export const fetchIssues = async () => {
+  const schemaId = import.meta.env.VITE_ALL_ISSUES_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB', filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Issues API response:', response.data);
+  return response.data;
+};
+
+//  Fetch Active Sprints
+export const fetchActiveSprints = async () => {
+  const schemaId = import.meta.env.VITE_ALL_SPRINTS_SCHEMA;
+  const url = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances/list?size=1000`;
+
+  const response = await axios.post(
+    url,
+    { dbType: 'TIDB',
+       filter: {} },
+    { headers:headers }
+  );
+
+  console.log(' Active Sprints API response:', response.data);
+  return response.data;
+};
 export const fetchUser = async (id = 1) => {
   const response = await api.get(`/users/${id}`);
   return response.data;
 };
-// Fetch Sample Posts
+
+//  Optional: Dummy API for posts
 export const fetchPosts = async () => {
   const response = await api.get('/posts?_limit=5');
   return response.data;
 };
-//Mock Fetch Sprints
+
+//  Mock sprints for demo
 export const fetchSprints = async () => {
-  // Possible assignees
   const allAssignees = [
     { name: 'vishwas', image: 'man' },
     { name: 'maya', image: 'woman' },
@@ -27,11 +130,11 @@ export const fetchSprints = async () => {
     { name: 'emma', image: 'woman' },
     { name: 'leo', image: 'gamer' },
   ];
+
   return Array.from({ length: 10 }, (_, i) => {
-    // Random number of assignees between 2 and 8
     const numAssignees = Math.floor(Math.random() * 7) + 2;
-    // Shuffle and pick assignees
     const shuffled = allAssignees.sort(() => 0.5 - Math.random());
+
     return {
       id: i + 1,
       name: `Sprint ${i + 1}`,
