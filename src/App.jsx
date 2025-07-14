@@ -1,7 +1,7 @@
 // src/App.jsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
-
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import Sidebar from './components/Sidebar';
 import OperationalDashboard from './pages/OperationalDashboard';
 import SprintDependencyView from './pages/SprintDependencyView';
@@ -45,6 +45,7 @@ function App() {
           <MainContent />
         </div>
       </div>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

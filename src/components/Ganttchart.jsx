@@ -282,14 +282,14 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const getTaskColor = (type) => {
     const colors = {
       sprint: "bg-purple-500",
-      feature: "bg-blue-500",
-      analytics: "bg-green-500",
+      ToDo: "bg-blue-500",
+      Done: "bg-green-500",
       security: "bg-red-500",
       agent: "bg-orange-500",
       design: "bg-pink-500",
       mobile: "bg-indigo-500",
       ai: "bg-cyan-500",
-      automation: "bg-yellow-500",
+      InProgress: "bg-yellow-500",
       backend: "bg-gray-600",
       planning: "bg-teal-500",
       testing: "bg-lime-500",

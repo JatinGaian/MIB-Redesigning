@@ -7,7 +7,6 @@ import { useIssues } from '../hooks/useIssues';
 import { shallow } from 'zustand/shallow'; //import shallow
 
 const ProfileView = () => {
-  //Use Zustand with shallow to avoid stale state and ensure re-render
   const { projects, boards, sprints, issues } = useApiDataStore(
     (state) => ({
       projects: state.projects,
@@ -23,22 +22,6 @@ const ProfileView = () => {
   const { isLoading: loadingBoards, data: boardsData } = useBoards();
   const { isLoading: loadingSprints, data: sprintsData } = useActiveSprints();
   const { isLoading: loadingIssues, data: issuesData } = useIssues();
-
-  // Debug logging to see what's happening with the data
-  // React.useEffect(() => {
-  //   console.log('🔍 Profile Debug - Zustand State:', {
-  //     projects: projects?.length || 0,
-  //     boards: boards?.length || 0,
-  //     sprints: sprints?.length || 0,
-  //     issues: issues?.length || 0,
-  //   });
-  //   console.log('🔍 Profile Debug - React Query Data:', {
-  //     projectsData: projectsData?.length || 0,
-  //     boardsData: boardsData?.length || 0,
-  //     sprintsData: sprintsData?.length || 0,
-  //     issuesData: issuesData?.length || 0,
-  //   });
-  // }, [projects, boards, sprints, issues, projectsData, boardsData, sprintsData, issuesData]);
 
   // Render helper
   const renderItem = (item, i, label) => (
