@@ -102,6 +102,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const headerHeight = 8;
   const sidebarWidth = 25;
 
+  // Calculate if content needs scrolling
+  const availableHeight = 100 - headerHeight; // Total height minus header
+  const contentHeight = filteredTasks.length * (taskHeight + taskPadding);
+  const needsVerticalScroll = contentHeight > availableHeight;
+  const shouldUseSpaceBetween = !needsVerticalScroll && filteredTasks.length > 1;
+
   // Auto-scroll to today's line on component mount
   useEffect(() => {
     const scrollToToday = () => {
@@ -395,8 +401,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     return months;
   };
 
-  // Calculate connection paths with smooth curves
-  const getConnectionPath = (fromTask, toTask, fromIndex, toIndex) => {
+  // Calculate connection paths with smooth curves and custom Y positions
+  const getConnectionPathWithCustomY = (fromTask, toTask, fromIndex, toIndex, fromY, toY) => {
     const fromPos = getTaskPosition(fromTask);
     const toPos = getTaskPosition(toTask);
 
@@ -405,15 +411,13 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     const vhToPx = window.innerHeight / 100;
 
     const fromX = (fromPos.x + fromPos.width) * vwToPx;
-    const fromY =
-      (fromIndex * (taskHeight + taskPadding) + taskHeight / 2) * vhToPx;
+    const fromYPx = fromY * vhToPx;
     const toX = toPos.x * vwToPx;
-    const toY =
-      (toIndex * (taskHeight + taskPadding) + taskHeight / 2) * vhToPx;
+    const toYPx = toY * vhToPx;
 
     // Create smooth curved path with better curve calculation
     const deltaX = toX - fromX;
-    const deltaY = toY - fromY;
+    const deltaY = toYPx - fromYPx;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // Adjust control points based on distance and direction
@@ -423,12 +427,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     );
     const controlPoint1X = fromX + controlPointOffset;
     const controlPoint1Y =
-      fromY + (deltaY > 0 ? Math.abs(deltaY) * 0.1 : -Math.abs(deltaY) * 0.1);
+      fromYPx + (deltaY > 0 ? Math.abs(deltaY) * 0.1 : -Math.abs(deltaY) * 0.1);
     const controlPoint2X = toX - controlPointOffset;
     const controlPoint2Y =
-      toY - (deltaY > 0 ? Math.abs(deltaY) * 0.1 : -Math.abs(deltaY) * 0.1);
+      toYPx - (deltaY > 0 ? Math.abs(deltaY) * 0.1 : -Math.abs(deltaY) * 0.1);
 
-    return `M ${fromX} ${fromY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${toX} ${toY}`;
+    return `M ${fromX} ${fromYPx} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${toX} ${toYPx}`;
   };
 
   // Calculate today line position
@@ -562,35 +566,56 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
             ref={sidebarRef}
             className="flex-1 overflow-y-auto scrollbar-hide"
           >
-            {filteredTasks.map((task, index) => (
-              <div
-                key={task.id}
-                className={`border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
-                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                } ${
-                  selectedTask === task.id
-                    ? "bg-blue-50 border-blue-200"
-                    : "hover:bg-gray-50"
-                }`}
-                onClick={() => setSelectedTask(task.id)}
-                style={{
-                  height: `${taskHeight + taskPadding}vh`,
-                  padding: `${1}vh ${1}vw`,
-                  gap: `${0.8}vw`,
-                }}
-              >
+            <div
+              className={shouldUseSpaceBetween ? 'flex flex-col justify-between h-full' : ''}
+              style={shouldUseSpaceBetween ? { height: `${availableHeight}vh` } : {}}
+            >
+              {filteredTasks.map((task, index) => {
+                // Calculate sidebar item height and position
+                const getItemStyle = () => {
+                  if (shouldUseSpaceBetween) {
+                    const rowHeight = availableHeight / filteredTasks.length;
+                    return {
+                      height: `${rowHeight}vh`,
+                      padding: `${rowHeight * 0.2}vh ${1}vw`,
+                      gap: `${0.8}vw`,
+                    };
+                  } else {
+                    return {
+                      height: `${taskHeight + taskPadding}vh`,
+                      padding: `${1}vh ${1}vw`,
+                      gap: `${0.8}vw`,
+                    };
+                  }
+                };
+                
+                return (
                 <div
-                  className="rounded-full bg-purple-500"
-                  style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
-                ></div>
-                <span
-                  style={{ fontSize: `${0.8}vw` }}
-                  className="text-gray-800 truncate flex-1"
+                  key={task.id}
+                  className={`border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  } ${
+                    selectedTask === task.id
+                      ? "bg-blue-50 border-blue-200"
+                      : "hover:bg-gray-50"
+                  }`}
+                  onClick={() => setSelectedTask(task.id)}
+                  style={getItemStyle()}
                 >
-                  {task.name}
-                </span>
-              </div>
-            ))}
+                  <div
+                    className="rounded-full bg-purple-500"
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  ></div>
+                  <span
+                    style={{ fontSize: `${0.8}vw` }}
+                    className="text-gray-800 truncate flex-1"
+                  >
+                    {task.name}
+                  </span>
+                </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -700,26 +725,38 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
               className="relative"
               style={{
                 width: `${daysDiff * dayWidth}vw`,
-                height: `${
-                  filteredTasks.length * (taskHeight + taskPadding)
-                }vh`,
+                height: shouldUseSpaceBetween 
+                  ? `${availableHeight}vh`
+                  : `${filteredTasks.length * (taskHeight + taskPadding)}vh`,
+                minHeight: `${availableHeight}vh`,
               }}
             >
               {/* Grid background */}
-              <div className="absolute inset-0 pointer-events-none">
+              <div className={`absolute inset-0 pointer-events-none ${
+                shouldUseSpaceBetween ? 'flex flex-col justify-between' : ''
+              }`}>
                 {/* Alternating row backgrounds */}
-                {filteredTasks.map((_, index) => (
+                {filteredTasks.map((_, index) => {
+                  const rowHeight = shouldUseSpaceBetween 
+                    ? `${availableHeight / filteredTasks.length}vh`
+                    : `${taskHeight + taskPadding}vh`;
+                  const rowTop = shouldUseSpaceBetween 
+                    ? `${(index * availableHeight) / filteredTasks.length}vh`
+                    : `${index * (taskHeight + taskPadding)}vh`;
+                  
+                  return (
                   <div
                     key={`row-bg-${index}`}
                     className={`absolute w-full ${
                       index % 2 === 0 ? "bg-gray-50" : "bg-white"
                     }`}
                     style={{
-                      top: `${index * (taskHeight + taskPadding)}vh`,
-                      height: `${taskHeight + taskPadding}vh`,
+                      top: rowTop,
+                      height: rowHeight,
                     }}
                   />
-                ))}
+                  );
+                })}
 
                 {/* Vertical grid lines - using all days for proper alignment */}
                 {Array.from({ length: daysDiff }, (_, index) => {
@@ -747,15 +784,21 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 })}
 
                 {/* Horizontal grid lines */}
-                {filteredTasks.map((_, index) => (
+                {filteredTasks.map((_, index) => {
+                  const lineTop = shouldUseSpaceBetween 
+                    ? `${((index + 1) * availableHeight) / filteredTasks.length}vh`
+                    : `${(index + 1) * (taskHeight + taskPadding)}vh`;
+                  
+                  return (
                   <div
                     key={index}
                     className="absolute w-full border-b border-gray-100"
                     style={{
-                      top: `${(index + 1) * (taskHeight + taskPadding)}vh`,
+                      top: lineTop,
                     }}
                   />
-                ))}
+                  );
+                })}
               </div>
 
               {/* SVG for smooth curves */}
@@ -763,17 +806,16 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 className="absolute inset-0 pointer-events-none z-10"
                 style={{
                   width: `${daysDiff * dayWidth}vw`,
-                  height: `${
-                    filteredTasks.length * (taskHeight + taskPadding)
-                  }vh`,
+                  height: shouldUseSpaceBetween 
+                    ? `${availableHeight}vh`
+                    : `${filteredTasks.length * (taskHeight + taskPadding)}vh`,
                 }}
                 viewBox={`0 0 ${
                   (daysDiff * dayWidth * window.innerWidth) / 100
                 } ${
-                  (filteredTasks.length *
-                    (taskHeight + taskPadding) *
-                    window.innerHeight) /
-                  100
+                  shouldUseSpaceBetween 
+                    ? (availableHeight * window.innerHeight) / 100
+                    : (filteredTasks.length * (taskHeight + taskPadding) * window.innerHeight) / 100
                 }`}
                 preserveAspectRatio="xMidYMid meet"
               >
@@ -784,11 +826,24 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                       (t) => t.id === depId
                     );
                     if (depTask && depIndex !== -1) {
-                      const pathData = getConnectionPath(
+                      // Calculate connection positions using same logic as task positioning
+                      const getConnectionY = (index) => {
+                        if (shouldUseSpaceBetween) {
+                          const rowHeight = availableHeight / filteredTasks.length;
+                          const rowTop = (index * availableHeight) / filteredTasks.length;
+                          return rowTop + rowHeight / 2; // Center of the row
+                        } else {
+                          return index * (taskHeight + taskPadding) + taskHeight / 2;
+                        }
+                      };
+                      
+                      const pathData = getConnectionPathWithCustomY(
                         depTask,
                         task,
                         depIndex,
-                        taskIndex
+                        taskIndex,
+                        getConnectionY(depIndex),
+                        getConnectionY(taskIndex)
                       );
                       const hasConflict = hasSchedulingConflict(depTask, task);
                       return (
@@ -816,6 +871,23 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 {filteredTasks.map((task, index) => {
                   const position = getTaskPosition(task);
                   const hasConflicts = hasTaskConflicts(task);
+                  
+                  // Calculate task vertical position - same logic as sidebar and grid
+                  const getTaskVerticalPosition = () => {
+                    if (shouldUseSpaceBetween) {
+                      const rowHeight = availableHeight / filteredTasks.length;
+                      const rowTop = (index * availableHeight) / filteredTasks.length;
+                      return rowTop + (rowHeight - taskHeight) / 2;
+                    } else {
+                      return index * (taskHeight + taskPadding) + taskPadding / 2;
+                    }
+                  };
+                  
+                  const taskTop = `${getTaskVerticalPosition()}vh`;
+                  
+                  const actualTaskHeight = shouldUseSpaceBetween 
+                    ? `${Math.min(taskHeight, (availableHeight / filteredTasks.length) * 0.8)}vh`
+                    : `${taskHeight - 1}vh`;
 
                   return (
                     <div
@@ -827,11 +899,9 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                       }`}
                       style={{
                         left: `${position.x}vw`,
-                        top: `${
-                          index * (taskHeight + taskPadding) + taskPadding / 2
-                        }vh`,
+                        top: taskTop,
                         width: `${position.width}vw`,
-                        height: `${taskHeight - 1}vh`,
+                        height: actualTaskHeight,
                         padding: `0 ${0.5}vw`,
                       }}
                       onClick={() => setSelectedTask(task.id)}
