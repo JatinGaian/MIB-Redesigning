@@ -4,10 +4,10 @@ import { useProjects } from '../hooks/useProjects';
 import { useBoards } from '../hooks/useBoards';
 import { useActiveSprints } from '../hooks/useActiveSprints';
 import { useIssues } from '../hooks/useIssues';
-import { shallow } from 'zustand/shallow'; // ✅ import shallow
+import { shallow } from 'zustand/shallow'; //import shallow
 
 const ProfileView = () => {
-  // ✅ Use Zustand with shallow to avoid stale state and ensure re-render
+  //Use Zustand with shallow to avoid stale state and ensure re-render
   const { projects, boards, sprints, issues } = useApiDataStore(
     (state) => ({
       projects: state.projects,
@@ -19,10 +19,26 @@ const ProfileView = () => {
   );
 
   // React Query hooks (already working fine)
-  const { isLoading: loadingProjects } = useProjects();
-  const { isLoading: loadingBoards } = useBoards();
-  const { isLoading: loadingSprints } = useActiveSprints();
-  const { isLoading: loadingIssues } = useIssues();
+  const { isLoading: loadingProjects, data: projectsData } = useProjects();
+  const { isLoading: loadingBoards, data: boardsData } = useBoards();
+  const { isLoading: loadingSprints, data: sprintsData } = useActiveSprints();
+  const { isLoading: loadingIssues, data: issuesData } = useIssues();
+
+  // Debug logging to see what's happening with the data
+  // React.useEffect(() => {
+  //   console.log('🔍 Profile Debug - Zustand State:', {
+  //     projects: projects?.length || 0,
+  //     boards: boards?.length || 0,
+  //     sprints: sprints?.length || 0,
+  //     issues: issues?.length || 0,
+  //   });
+  //   console.log('🔍 Profile Debug - React Query Data:', {
+  //     projectsData: projectsData?.length || 0,
+  //     boardsData: boardsData?.length || 0,
+  //     sprintsData: sprintsData?.length || 0,
+  //     issuesData: issuesData?.length || 0,
+  //   });
+  // }, [projects, boards, sprints, issues, projectsData, boardsData, sprintsData, issuesData]);
 
   // Render helper
   const renderItem = (item, i, label) => (
@@ -56,7 +72,7 @@ const ProfileView = () => {
           {loadingBoards ? (
             <li>Loading boards...</li>
           ) : boards.length === 0 ? (
-            <li>No boards found.</li>
+            <li>No boards Found.</li>
           ) : (
             boards.map((board, i) => renderItem(board, i, 'Board'))
           )}
@@ -68,9 +84,9 @@ const ProfileView = () => {
         <h2 className="text-[2.2vh] font-semibold">Active Sprints</h2>
         <ul className="list-disc ml-[2vw] mt-[1vh] text-[1.8vh]">
           {loadingSprints ? (
-            <li>Loading sprints...</li>
+            <li>Loading Sprints...</li>
           ) : sprints.length === 0 ? (
-            <li>No sprints found.</li>
+            <li>No sprints Found .</li>
           ) : (
             sprints.map((sprint, i) => renderItem(sprint, i, 'Sprint'))
           )}
