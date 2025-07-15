@@ -17,6 +17,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [zoomLevel, setZoomLevel] = useState(1);
   const [viewMode, setViewMode] = useState("Weeks");
+  const [filters, setFilters] = useState({
+    category: [],
+    manager: [],
+    type: [],
+  });
+  const [openDropdown, setOpenDropdown] = useState(null);
   const svgRef = useRef(null);
   const chartRef = useRef(null);
   const timelineRef = useRef(null);
@@ -49,16 +55,34 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
 
   // Filter tasks for Days view (current week only)
   const getFilteredTasks = () => {
+    let filtered = tasks;
+
+    // Apply filters first
+    if (filters.category.length > 0) {
+      filtered = filtered.filter((task) =>
+        filters.category.includes(task.category)
+      );
+    }
+    if (filters.manager.length > 0) {
+      filtered = filtered.filter((task) =>
+        filters.manager.includes(task.manager)
+      );
+    }
+    if (filters.type.length > 0) {
+      filtered = filtered.filter((task) => filters.type.includes(task.type));
+    }
+
+    // Then apply date filtering for Days view
     if (viewMode === "Days") {
       const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
-      
-      return tasks.filter(task => {
+
+      return filtered.filter((task) => {
         const taskEndDate = getTaskEndDate(task);
         // Show task if it overlaps with current week (starts before week ends AND ends after week starts)
         return task.startDate <= weekEnd && taskEndDate >= weekStart;
       });
     }
-    return tasks;
+    return filtered;
   };
 
   // Get date range for Days view or regular view
@@ -106,14 +130,15 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   const availableHeight = 100 - headerHeight; // Total height minus header
   const contentHeight = filteredTasks.length * (taskHeight + taskPadding);
   const needsVerticalScroll = contentHeight > availableHeight;
-  const shouldUseSpaceBetween = !needsVerticalScroll && filteredTasks.length > 1;
+  const shouldUseSpaceBetween =
+    !needsVerticalScroll && filteredTasks.length > 1;
 
   // Auto-scroll to today's line on component mount
   useEffect(() => {
     const scrollToToday = () => {
       // Only auto-scroll on initial load, not on every render
       if (viewMode !== "Days") return;
-      
+
       const today = new Date();
       const todayDays = Math.ceil(
         (today.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -207,33 +232,35 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
       (task.startDate.getTime() - viewStartDate.getTime()) /
         (1000 * 60 * 60 * 24)
     );
-    
+
     if (viewMode === "Days") {
       const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
       const taskEndDate = getTaskEndDate(task);
-      
+
       // Clip task to current week boundaries
-      const clippedStart = task.startDate < weekStart ? weekStart : task.startDate;
+      const clippedStart =
+        task.startDate < weekStart ? weekStart : task.startDate;
       const clippedEnd = taskEndDate > weekEnd ? weekEnd : taskEndDate;
-      
+
       const clippedStartDays = Math.floor(
-        (clippedStart.getTime() - viewStartDate.getTime()) / (1000 * 60 * 60 * 24)
+        (clippedStart.getTime() - viewStartDate.getTime()) /
+          (1000 * 60 * 60 * 24)
       );
       const clippedDuration = Math.floor(
         (clippedEnd.getTime() - clippedStart.getTime()) / (1000 * 60 * 60 * 24)
       );
-      
+
       return {
         x: clippedStartDays * dayWidth,
         width: Math.max(clippedDuration * dayWidth, dayWidth * 0.5), // Minimum width
-        isClipped: task.startDate < weekStart || taskEndDate > weekEnd
+        isClipped: task.startDate < weekStart || taskEndDate > weekEnd,
       };
     }
-    
+
     return {
       x: startDays * dayWidth,
       width: task.duration * dayWidth,
-      isClipped: false
+      isClipped: false,
     };
   };
 
@@ -278,22 +305,72 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     // or navigate(`/sprints/${task.id}`);
   };
 
+  // Get unique values for filter options
+  const getFilterOptions = () => {
+    const categories = [...new Set(tasks.map((task) => task.category))].sort();
+    const managers = [...new Set(tasks.map((task) => task.manager))].sort();
+    const types = [...new Set(tasks.map((task) => task.type))].sort();
+
+    return { categories, managers, types };
+  };
+
+  // Handle filter changes
+  const handleFilterToggle = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: prev[filterType].includes(value)
+        ? prev[filterType].filter((item) => item !== value)
+        : [...prev[filterType], value],
+    }));
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      category: [],
+      manager: [],
+      type: [],
+    });
+    setOpenDropdown(null);
+  };
+
+  // Toggle dropdown
+  const toggleDropdown = (dropdownType) => {
+    setOpenDropdown(openDropdown === dropdownType ? null : dropdownType);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".filter-dropdown")) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Get active filter count
+  const getActiveFilterCount = (filterType) => {
+    return filters[filterType].length;
+  };
+
   // Get task color based on type
   const getTaskColor = (type) => {
     const colors = {
       sprint: "bg-purple-500",
       ToDo: "bg-blue-500",
       Done: "bg-green-500",
-      security: "bg-red-500",
+      closed: "bg-red-500",
       agent: "bg-orange-500",
       design: "bg-pink-500",
       mobile: "bg-indigo-500",
       ai: "bg-cyan-500",
       InProgress: "bg-yellow-500",
-      backend: "bg-gray-600",
+      active: "bg-gray-600",
       planning: "bg-teal-500",
-      testing: "bg-lime-500",
-      review: "bg-rose-500",
+      future: "bg-lime-500",
     };
     return colors[type] || "bg-gray-500";
   };
@@ -402,7 +479,14 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   };
 
   // Calculate connection paths with smooth curves and custom Y positions
-  const getConnectionPathWithCustomY = (fromTask, toTask, fromIndex, toIndex, fromY, toY) => {
+  const getConnectionPathWithCustomY = (
+    fromTask,
+    toTask,
+    fromIndex,
+    toIndex,
+    fromY,
+    toY
+  ) => {
     const fromPos = getTaskPosition(fromTask);
     const toPos = getTaskPosition(toTask);
 
@@ -449,9 +533,46 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
   };
 
+  // Get manager initials from full name
+  const getManagerInitials = (managerName) => {
+    if (!managerName) return "?";
+    return managerName
+      .split(" ")
+      .map((name) => name.charAt(0).toUpperCase())
+      .join("")
+      .substring(0, 2); // Limit to 2 characters
+  };
+
+  // Get consistent avatar color based on manager name
+  const getAvatarColor = (managerName) => {
+    if (!managerName) return "bg-gray-500";
+
+    const colors = [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-orange-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      "bg-teal-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-cyan-500",
+    ];
+
+    // Generate consistent color based on name hash
+    let hash = 0;
+    for (let i = 0; i < managerName.length; i++) {
+      hash = managerName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colorIndex = Math.abs(hash) % colors.length;
+    return colors[colorIndex];
+  };
+
   const monthRange = generateMonthRange();
   const dateRangeForHeader = generateDateRange();
   const allDays = generateAllDays();
+  const filterOptions = getFilterOptions();
 
   // Zoom controls
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(3, prev + 0.2));
@@ -543,21 +664,197 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
           <div
             className="border-b border-gray-200 bg-gray-50"
             style={{
-              height: `${headerHeight}vh`,
-              padding: `${1.5}vh ${1}vw`,
+              minHeight: `${headerHeight}vh`,
+              //   padding: `${1}vh ${1}vw`,
             }}
           >
-            <div className="flex items-center" style={{ gap: `${0.5}vw` }}>
-              <ChevronDown
+            <div
+              className="flex items-center justify-between mb-2"
+              style={{ gap: `${0.5}vw` }}
+            >
+              {/* <ChevronDown
                 style={{ width: `${1}vw`, height: `${1}vw` }}
                 className="text-gray-500"
-              />
+              /> */}
+              <span></span>
               <span
                 style={{ fontSize: `${0.9}vw` }}
                 className="font-semibold text-gray-800"
               >
-                Sprints {viewMode === "Days" && "(Current Week)"}
+                Tasks List {viewMode === "Days" && "(Current Week)"}
               </span>
+              <button
+                onClick={clearFilters}
+                className="text-blue-600 hover:text-blue-800 text-xs mr-3"
+                style={{ fontSize: `${0.7}vw` }}
+              >
+                Clear All Filters
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-2 justify-around">
+              {/* Category Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() => toggleDropdown("category")}
+                  className="flex items-center justify-between w-full border border-gray-300 rounded bg-white hover:bg-gray-50"
+                  style={{
+                    fontSize: `${0.7}vw`,
+                    padding: `${0.3}vh ${0.5}vw`,
+                    minWidth: `${6}vw`,
+                  }}
+                >
+                  <span>
+                    Category{" "}
+                    {getActiveFilterCount("category") > 0 &&
+                      `(${getActiveFilterCount("category")})`}
+                  </span>
+                  <ChevronDown
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  />
+                </button>
+
+                {openDropdown === "category" && (
+                  <div
+                    className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 overflow-y-auto"
+                    style={{ minWidth: `${8}vw`, maxHeight: `${20}vh` }}
+                  >
+                    <div className="overflow-y-auto">
+                      {filterOptions.categories.map((category) => (
+                        <label
+                          key={category}
+                          className="flex items-center hover:bg-gray-50 cursor-pointer"
+                          style={{
+                            padding: `${0.4}vh ${0.8}vw`,
+                            fontSize: `${0.7}vw`,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.category.includes(category)}
+                            onChange={() =>
+                              handleFilterToggle("category", category)
+                            }
+                            className="mr-2"
+                            style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                          />
+                          <span>
+                            {category.charAt(0).toUpperCase() +
+                              category.slice(1)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Manager Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() => toggleDropdown("manager")}
+                  className="flex items-center justify-between w-full border border-gray-300 rounded bg-white hover:bg-gray-50"
+                  style={{
+                    fontSize: `${0.7}vw`,
+                    padding: `${0.3}vh ${0.5}vw`,
+                    minWidth: `${6}vw`,
+                  }}
+                >
+                  <span>
+                    Manager{" "}
+                    {getActiveFilterCount("manager") > 0 &&
+                      `(${getActiveFilterCount("manager")})`}
+                  </span>
+                  <ChevronDown
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  />
+                </button>
+
+                {openDropdown === "manager" && (
+                  <div
+                    className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 overflow-y-auto"
+                    style={{ minWidth: `${8}vw`, maxHeight: `${20}vh` }}
+                  >
+                    <div className="overflow-y-auto">
+                      {filterOptions.managers.map((manager) => (
+                        <label
+                          key={manager}
+                          className="flex items-center hover:bg-gray-50 cursor-pointer"
+                          style={{
+                            padding: `${0.4}vh ${0.8}vw`,
+                            fontSize: `${0.7}vw`,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.manager.includes(manager)}
+                            onChange={() =>
+                              handleFilterToggle("manager", manager)
+                            }
+                            className="mr-2"
+                            style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                          />
+                          <span>{manager}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Type Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() => toggleDropdown("type")}
+                  className="flex items-center justify-between w-full border border-gray-300 rounded bg-white hover:bg-gray-50"
+                  style={{
+                    fontSize: `${0.7}vw`,
+                    padding: `${0.3}vh ${0.5}vw`,
+                    minWidth: `${6}vw`,
+                  }}
+                >
+                  <span>
+                    Type{" "}
+                    {getActiveFilterCount("type") > 0 &&
+                      `(${getActiveFilterCount("type")})`}
+                  </span>
+                  <ChevronDown
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  />
+                </button>
+
+                {openDropdown === "type" && (
+                  <div
+                    className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 overflow-y-auto"
+                    style={{ minWidth: `${8}vw`, maxHeight: `${20}vh` }}
+                  >
+                    <div className="overflow-y-auto">
+                      {filterOptions.types.map((type) => (
+                        <label
+                          key={type}
+                          className="flex items-center hover:bg-gray-50 cursor-pointer"
+                          style={{
+                            padding: `${0.4}vh ${0.8}vw`,
+                            fontSize: `${0.7}vw`,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={filters.type.includes(type)}
+                            onChange={() => handleFilterToggle("type", type)}
+                            className="mr-2"
+                            style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                          />
+                          <span>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -567,8 +864,14 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
             className="flex-1 overflow-y-auto scrollbar-hide"
           >
             <div
-              className={shouldUseSpaceBetween ? 'flex flex-col justify-between h-full' : ''}
-              style={shouldUseSpaceBetween ? { height: `${availableHeight}vh` } : {}}
+              className={
+                shouldUseSpaceBetween
+                  ? "flex flex-col justify-between h-full"
+                  : ""
+              }
+              style={
+                shouldUseSpaceBetween ? { height: `${availableHeight}vh` } : {}
+              }
             >
               {filteredTasks.map((task, index) => {
                 // Calculate sidebar item height and position
@@ -588,31 +891,58 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                     };
                   }
                 };
-                
+
                 return (
-                <div
-                  key={task.id}
-                  className={`border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
-                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  } ${
-                    selectedTask === task.id
-                      ? "bg-blue-50 border-blue-200"
-                      : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => setSelectedTask(task.id)}
-                  style={getItemStyle()}
-                >
                   <div
-                    className="rounded-full bg-purple-500"
-                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
-                  ></div>
-                  <span
-                    style={{ fontSize: `${0.8}vw` }}
-                    className="text-gray-800 truncate flex-1"
+                    key={task.id}
+                    className={`border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } ${
+                      selectedTask === task.id
+                        ? "bg-blue-50 border-blue-200"
+                        : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => setSelectedTask(task.id)}
+                    style={getItemStyle()}
                   >
-                    {task.name}
-                  </span>
-                </div>
+                    <div
+                      className="rounded-full bg-purple-500"
+                      style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                    ></div>
+                    <span
+                      style={{ fontSize: `${0.8}vw` }}
+                      className="text-gray-800 truncate flex-1"
+                    >
+                      {task.name}
+                    </span>
+                    <div
+                      className="flex flex-row items-center text-xs text-gray-500 gap-2"
+                      style={{ fontSize: `${0.6}vw` }}
+                    >
+                      <span
+                        className={`capitalize ${getTaskColor(
+                          task.type
+                        )} text-white font-medium px-1 py-0.9 rounded`}
+                      >
+                        {task.type.toUpperCase()}
+                      </span>
+                      <div
+                        className={`rounded-full ${getAvatarColor(
+                          task.manager
+                        )} text-white font-semibold flex items-center justify-center`}
+                        style={{
+                          width: `${1}vw`,
+                          height: `${1}vw`,
+                          fontSize: `${0.5}vw`,
+                          // minWidth: '20px',
+                          // minHeight: '20px'
+                        }}
+                        title={task.manager}
+                      >
+                        {getManagerInitials(task.manager)}
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -702,7 +1032,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                             left: `${-1}vw`,
                             padding: `${0.2}vh ${0.5}vw`,
                             fontSize: `${0.6}vw`,
-                            whiteSpace: 'nowrap',
+                            whiteSpace: "nowrap",
                           }}
                         >
                           Mon
@@ -725,36 +1055,38 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
               className="relative"
               style={{
                 width: `${daysDiff * dayWidth}vw`,
-                height: shouldUseSpaceBetween 
+                height: shouldUseSpaceBetween
                   ? `${availableHeight}vh`
                   : `${filteredTasks.length * (taskHeight + taskPadding)}vh`,
                 minHeight: `${availableHeight}vh`,
               }}
             >
               {/* Grid background */}
-              <div className={`absolute inset-0 pointer-events-none ${
-                shouldUseSpaceBetween ? 'flex flex-col justify-between' : ''
-              }`}>
+              <div
+                className={`absolute inset-0 pointer-events-none ${
+                  shouldUseSpaceBetween ? "flex flex-col justify-between" : ""
+                }`}
+              >
                 {/* Alternating row backgrounds */}
                 {filteredTasks.map((_, index) => {
-                  const rowHeight = shouldUseSpaceBetween 
+                  const rowHeight = shouldUseSpaceBetween
                     ? `${availableHeight / filteredTasks.length}vh`
                     : `${taskHeight + taskPadding}vh`;
-                  const rowTop = shouldUseSpaceBetween 
+                  const rowTop = shouldUseSpaceBetween
                     ? `${(index * availableHeight) / filteredTasks.length}vh`
                     : `${index * (taskHeight + taskPadding)}vh`;
-                  
+
                   return (
-                  <div
-                    key={`row-bg-${index}`}
-                    className={`absolute w-full ${
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    }`}
-                    style={{
-                      top: rowTop,
-                      height: rowHeight,
-                    }}
-                  />
+                    <div
+                      key={`row-bg-${index}`}
+                      className={`absolute w-full ${
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      }`}
+                      style={{
+                        top: rowTop,
+                        height: rowHeight,
+                      }}
+                    />
                   );
                 })}
 
@@ -763,40 +1095,47 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                   const date = new Date(viewStartDate);
                   date.setDate(viewStartDate.getDate() + index);
                   const isMonday = date.getDay() === 1;
-                  const isToday = date.toDateString() === new Date().toDateString();
-                  
+                  const isToday =
+                    date.toDateString() === new Date().toDateString();
+
                   return (
-                  <div
-                    key={index}
-                    className={`absolute h-full ${
-                      isToday
-                        ? "bg-red-500"
-                        : isMonday
-                        ? "bg-blue-300"
-                        : "border-r border-gray-100"
-                    }`}
-                    style={{
-                      left: `${index * dayWidth}vw`,
-                      width: isToday ? `${0.15}vw` : isMonday ? `${0.15}vw` : `${0.05}vw`,
-                    }}
-                  />
+                    <div
+                      key={index}
+                      className={`absolute h-full ${
+                        isToday
+                          ? "bg-red-500"
+                          : isMonday
+                          ? "bg-blue-300"
+                          : "border-r border-gray-100"
+                      }`}
+                      style={{
+                        left: `${index * dayWidth}vw`,
+                        width: isToday
+                          ? `${0.15}vw`
+                          : isMonday
+                          ? `${0.15}vw`
+                          : `${0.05}vw`,
+                      }}
+                    />
                   );
                 })}
 
                 {/* Horizontal grid lines */}
                 {filteredTasks.map((_, index) => {
-                  const lineTop = shouldUseSpaceBetween 
-                    ? `${((index + 1) * availableHeight) / filteredTasks.length}vh`
+                  const lineTop = shouldUseSpaceBetween
+                    ? `${
+                        ((index + 1) * availableHeight) / filteredTasks.length
+                      }vh`
                     : `${(index + 1) * (taskHeight + taskPadding)}vh`;
-                  
+
                   return (
-                  <div
-                    key={index}
-                    className="absolute w-full border-b border-gray-100"
-                    style={{
-                      top: lineTop,
-                    }}
-                  />
+                    <div
+                      key={index}
+                      className="absolute w-full border-b border-gray-100"
+                      style={{
+                        top: lineTop,
+                      }}
+                    />
                   );
                 })}
               </div>
@@ -806,16 +1145,19 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 className="absolute inset-0 pointer-events-none z-10"
                 style={{
                   width: `${daysDiff * dayWidth}vw`,
-                  height: shouldUseSpaceBetween 
+                  height: shouldUseSpaceBetween
                     ? `${availableHeight}vh`
                     : `${filteredTasks.length * (taskHeight + taskPadding)}vh`,
                 }}
                 viewBox={`0 0 ${
                   (daysDiff * dayWidth * window.innerWidth) / 100
                 } ${
-                  shouldUseSpaceBetween 
+                  shouldUseSpaceBetween
                     ? (availableHeight * window.innerHeight) / 100
-                    : (filteredTasks.length * (taskHeight + taskPadding) * window.innerHeight) / 100
+                    : (filteredTasks.length *
+                        (taskHeight + taskPadding) *
+                        window.innerHeight) /
+                      100
                 }`}
                 preserveAspectRatio="xMidYMid meet"
               >
@@ -829,14 +1171,18 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                       // Calculate connection positions using same logic as task positioning
                       const getConnectionY = (index) => {
                         if (shouldUseSpaceBetween) {
-                          const rowHeight = availableHeight / filteredTasks.length;
-                          const rowTop = (index * availableHeight) / filteredTasks.length;
+                          const rowHeight =
+                            availableHeight / filteredTasks.length;
+                          const rowTop =
+                            (index * availableHeight) / filteredTasks.length;
                           return rowTop + rowHeight / 2; // Center of the row
                         } else {
-                          return index * (taskHeight + taskPadding) + taskHeight / 2;
+                          return (
+                            index * (taskHeight + taskPadding) + taskHeight / 2
+                          );
                         }
                       };
-                      
+
                       const pathData = getConnectionPathWithCustomY(
                         depTask,
                         task,
@@ -871,22 +1217,28 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                 {filteredTasks.map((task, index) => {
                   const position = getTaskPosition(task);
                   const hasConflicts = hasTaskConflicts(task);
-                  
+
                   // Calculate task vertical position - same logic as sidebar and grid
                   const getTaskVerticalPosition = () => {
                     if (shouldUseSpaceBetween) {
                       const rowHeight = availableHeight / filteredTasks.length;
-                      const rowTop = (index * availableHeight) / filteredTasks.length;
+                      const rowTop =
+                        (index * availableHeight) / filteredTasks.length;
                       return rowTop + (rowHeight - taskHeight) / 2;
                     } else {
-                      return index * (taskHeight + taskPadding) + taskPadding / 2;
+                      return (
+                        index * (taskHeight + taskPadding) + taskPadding / 2
+                      );
                     }
                   };
-                  
+
                   const taskTop = `${getTaskVerticalPosition()}vh`;
-                  
-                  const actualTaskHeight = shouldUseSpaceBetween 
-                    ? `${Math.min(taskHeight, (availableHeight / filteredTasks.length) * 0.8)}vh`
+
+                  const actualTaskHeight = shouldUseSpaceBetween
+                    ? `${Math.min(
+                        taskHeight,
+                        (availableHeight / filteredTasks.length) * 0.8
+                      )}vh`
                     : `${taskHeight - 1}vh`;
 
                   return (
@@ -999,6 +1351,16 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
               <div>
                 <span className="text-gray-400">Progress:</span>
                 <div className="font-medium">{hoveredTask.progress}%</div>
+              </div>
+              <div>
+                <span className="text-gray-400">Manager:</span>
+                <div className="font-medium">{hoveredTask.manager}</div>
+              </div>
+              <div>
+                <span className="text-gray-400">Category:</span>
+                <div className="font-medium capitalize">
+                  {hoveredTask.category}
+                </div>
               </div>
             </div>
             {hasTaskConflicts(hoveredTask) && (
