@@ -21,6 +21,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     category: [],
     manager: [],
     type: [],
+    projectName: [],
+    boardName: [],
   });
   const [openDropdown, setOpenDropdown] = useState(null);
   const svgRef = useRef(null);
@@ -56,6 +58,16 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Filter tasks for Days view (current week only)
   const getFilteredTasks = () => {
     let filtered = tasks;
+    if (filters.projectName.length > 0) {
+      filtered = filtered.filter((task) =>
+        filters.projectName.includes(task.projectName)
+      );
+    }
+    if (filters.boardName.length > 0) {
+      filtered = filtered.filter((task) =>
+        filters.boardName.includes(task.boardName)
+      );
+    }
 
     // Apply filters first
     if (filters.category.length > 0) {
@@ -292,17 +304,25 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
   // Handle link click to navigate to task page
   const handleLinkClick = (task, e) => {
     e.stopPropagation(); // Prevent task selection
-
-    // Extract task ID from name (e.g., "MIB-18" from "MIB-18 MIB - Mobius IntelliBoard")
-    const taskIdMatch = task.name.match(/^([A-Z]+-\d+)/);
-    const taskId = taskIdMatch ? taskIdMatch[1] : task.id;
+console.log(task);
+    // // Extract task ID from name (e.g., "MIB-18" from "MIB-18 MIB - Mobius IntelliBoard")
+    // const taskIdMatch = task.name.match(/^([A-Z]+-\d+)/);
+    // const taskId = taskIdMatch ? taskIdMatch[1] : task.id;
 
     // For now, show alert - replace with actual navigation
-    alert(`Navigating to ${taskId} page...`);
+    alert(`Navigating to ${task.boardId} page...`);
 
     // Replace with actual navigation:
-    // window.open(`/tasks/${taskId}`, '_blank');
+    // window.open(`https://mobiusdtaas.atlassian.net/jira/software/c/projects/RNDHRCM/boards/${task.boardId}/backlog`, '_blank');
     // or navigate(`/sprints/${task.id}`);
+// const project =  task?.id?.split("-")[0];
+// console.log(project);
+console.log(`https://mobiusdtaas.atlassian.net/jira/software/c/projects/${task.projectKey}/boards/${task.boardId}/backlog`);
+    window.open(
+      `https://mobiusdtaas.atlassian.net/jira/software/c/projects/${task.projectKey}/boards/${task.boardId}/backlog`,
+      '_blank'
+    );
+    
   };
 
   // Get unique values for filter options
@@ -310,8 +330,12 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
     const categories = [...new Set(tasks.map((task) => task.category))].sort();
     const managers = [...new Set(tasks.map((task) => task.manager))].sort();
     const types = [...new Set(tasks.map((task) => task.type))].sort();
+    const projectNames = [
+      ...new Set(tasks.map((task) => task.projectName)),
+    ].sort();
+    const boardNames = [...new Set(tasks.map((task) => task.boardName))].sort();
 
-    return { categories, managers, types };
+    return { categories, managers, types, projectNames, boardNames };
   };
 
   // Handle filter changes
@@ -330,6 +354,8 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
       category: [],
       manager: [],
       type: [],
+      projectName: [], // reset
+      boardName: [],
     });
     setOpenDropdown(null);
   };
@@ -672,10 +698,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
               className="flex items-center justify-between mb-2"
               style={{ gap: `${0.5}vw` }}
             >
-              {/* <ChevronDown
-                style={{ width: `${1}vw`, height: `${1}vw` }}
-                className="text-gray-500"
-              /> */}
+            
               <span></span>
               <span
                 style={{ fontSize: `${0.9}vw` }}
@@ -702,7 +725,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                   style={{
                     fontSize: `${0.7}vw`,
                     padding: `${0.3}vh ${0.5}vw`,
-                    minWidth: `${6}vw`,
+                    minWidth: `${3.5}vw`,
                   }}
                 >
                   <span>
@@ -758,7 +781,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                   style={{
                     fontSize: `${0.7}vw`,
                     padding: `${0.3}vh ${0.5}vw`,
-                    minWidth: `${6}vw`,
+                    minWidth: `${3.5}vw`,
                   }}
                 >
                   <span>
@@ -811,7 +834,7 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                   style={{
                     fontSize: `${0.7}vw`,
                     padding: `${0.3}vh ${0.5}vw`,
-                    minWidth: `${6}vw`,
+                    minWidth: `${3.5}vw`,
                   }}
                 >
                   <span>
@@ -852,6 +875,108 @@ const GanttChart = ({ tasks, startDate, endDate }) => {
                         </label>
                       ))}
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Project Name Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() => toggleDropdown("projectName")}
+                  className="flex items-center justify-between w-full border border-gray-300 rounded bg-white hover:bg-gray-50"
+                  style={{
+                    fontSize: `${0.7}vw`,
+                    padding: `${0.3}vh ${0.5}vw`,
+                    minWidth: `${3.5}vw`,
+                  }}
+                >
+                  <span>
+                    Project{" "}
+                    {getActiveFilterCount("projectName") > 0 &&
+                      `(${getActiveFilterCount("projectName")})`}
+                  </span>
+                  <ChevronDown
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  />
+                </button>
+
+                {openDropdown === "projectName" && (
+                  <div
+                    className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 overflow-y-auto"
+                    style={{ minWidth: `${8}vw`, maxHeight: `${20}vh` }}
+                  >
+                    {filterOptions.projectNames.map((project) => (
+                      <label
+                        key={project}
+                        className="flex items-center hover:bg-gray-50 cursor-pointer"
+                        style={{
+                          padding: `${0.4}vh ${0.8}vw`,
+                          fontSize: `${0.7}vw`,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.projectName.includes(project)}
+                          onChange={() =>
+                            handleFilterToggle("projectName", project)
+                          }
+                          className="mr-2"
+                          style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                        />
+                        <span>{project}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Board Name Filter */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={() => toggleDropdown("boardName")}
+                  className="flex items-center justify-between w-full border border-gray-300 rounded bg-white hover:bg-gray-50"
+                  style={{
+                    fontSize: `${0.7}vw`,
+                    padding: `${0.3}vh ${0.5}vw`,
+                    minWidth: `${3.5}vw`,
+                  }}
+                >
+                  <span>
+                    Board{" "}
+                    {getActiveFilterCount("boardName") > 0 &&
+                      `(${getActiveFilterCount("boardName")})`}
+                  </span>
+                  <ChevronDown
+                    style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                  />
+                </button>
+
+                {openDropdown === "boardName" && (
+                  <div
+                    className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 overflow-y-auto"
+                    style={{ minWidth: `${8}vw`, maxHeight: `${20}vh` }}
+                  >
+                    {filterOptions.boardNames.map((board) => (
+                      <label
+                        key={board}
+                        className="flex items-center hover:bg-gray-50 cursor-pointer"
+                        style={{
+                          padding: `${0.4}vh ${0.8}vw`,
+                          fontSize: `${0.7}vw`,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={filters.boardName.includes(board)}
+                          onChange={() =>
+                            handleFilterToggle("boardName", board)
+                          }
+                          className="mr-2"
+                          style={{ width: `${0.8}vw`, height: `${0.8}vw` }}
+                        />
+                        <span>{board}</span>
+                      </label>
+                    ))}
                   </div>
                 )}
               </div>
