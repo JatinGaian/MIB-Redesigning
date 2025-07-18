@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useSidebarStore } from '../stores/sidebarStore';
 
 import operationalIcon from '../assets/sidebar_icons/operational_dashboard.png';
@@ -11,16 +12,16 @@ import TopLogo from '../assets/sidebar_icons/top.jpg';
 import UserLogo from '../assets/sidebar_icons/user.png';
 
 const navItems = [
-  { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard' },
-  { key: 'SprintDependencyView', icon: ganttChart, alt: 'SprintDependencyView' },
-  { key: 'profile', icon: profileIcon, alt: 'profile view' },
-  { key: 'report', icon: reportIcon, alt: 'Report View' },
-  { key: 'sprint', icon: sprintIcon, alt: 'Sprint View' },
-
+  { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard', path: '/operationalDashboard' },
+  { key: 'SprintDependencyView', icon: ganttChart, alt: 'SprintDependencyView', path: '/SprintDependencyView' },
+  { key: 'profile', icon: profileIcon, alt: 'profile view', path: '/profileView' },
+  { key: 'report', icon: reportIcon, alt: 'Report View', path: '/reportView' },
+  { key: 'sprint', icon: sprintIcon, alt: 'Sprint View', path: '/sprintView' },
 ];
 
 export default function Sidebar() {
   const { selected, setSelected } = useSidebarStore();
+  const location = useLocation();
 
   return (
     <div className="h-[100vh] w-[4vw] bg-white flex flex-col items-center shadow-lg z-50">
@@ -35,26 +36,29 @@ export default function Sidebar() {
 
       {/* Top Navigation */}
       <nav className="flex flex-col gap-[4vh] w-full items-center">
-        {navItems.map(({ key, icon, alt }) => (
-          <button
-            key={key}
-            onClick={() => setSelected(key)}
-            aria-label={alt}
-            aria-current={selected === key ? 'page' : undefined}
-            title={alt}
-            className={`flex items-center justify-center w-[2.5vw] h-[2.5vw] rounded-lg transition-all duration-200
-              ${selected === key
-                ? 'ring-2 ring-blue-500 scale-110 bg-blue-100'
-                : 'hover:bg-gray-100'}`}
-          >
-            <img
-              src={icon}
-              alt={alt}
-              className={`w-[1.5vw] h-[1.5vw] object-contain
-                ${selected === key ? 'drop-shadow-[0_2px_6px_rgba(59,130,246,0.5)]' : ''}`}
-            />
-          </button>
-        ))}
+        {navItems.map(({ key, icon, alt, path }) => {
+          // Highlight if current route matches path, or Zustand selected matches key
+          const isActive = location.pathname === path || selected === key;
+          return (
+            <Link
+              key={key}
+              to={path}
+              onClick={() => setSelected(key)}
+              aria-label={alt}
+              aria-current={isActive ? 'page' : undefined}
+              title={alt}
+              className={`flex items-center justify-center w-[2.5vw] h-[2.5vw] rounded-lg transition-all duration-200
+                ${isActive ? 'ring-2 ring-blue-500 scale-110 bg-blue-100' : 'hover:bg-gray-100'}`}
+            >
+              <img
+                src={icon}
+                alt={alt}
+                className={`w-[1.5vw] h-[1.5vw] object-contain
+                  ${isActive ? 'drop-shadow-[0_2px_6px_rgba(59,130,246,0.5)]' : ''}`}
+              />
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Spacer */}
