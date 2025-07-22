@@ -29,11 +29,11 @@ function App() {
           <div className="w-[96vw] p-[0.8vw] overflow-auto">
             <Routes>
               <Route path="/" element={<Navigate to="/operational" replace />} />
-              <Route path="/operationalDashboard" element={<OperationalDashboard />} />
+              <Route path="/operational" element={<OperationalDashboard />} />
               <Route path="/SprintDependencyView" element={<SprintDependencyView />} />
-              <Route path="/reportView" element={<ReportView />} />
-              <Route path="/sprintView" element={<SprintView />} />
-              <Route path="/profileView" element={<ProfileView />} />
+              <Route path="/report" element={<ReportView />} />
+              <Route path="/sprint" element={<SprintView />} />
+              <Route path="/profile" element={<ProfileView />} />
             </Routes>
           </div>
         </div>

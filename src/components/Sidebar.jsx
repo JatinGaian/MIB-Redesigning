@@ -12,11 +12,11 @@ import TopLogo from '../assets/sidebar_icons/top.jpg';
 import UserLogo from '../assets/sidebar_icons/user.png';
 
 const navItems = [
-  { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard', path: '/operationalDashboard' },
+  { key: 'operational', icon: operationalIcon, alt: 'Operational Dashboard', path: '/operational' },
   { key: 'SprintDependencyView', icon: ganttChart, alt: 'SprintDependencyView', path: '/SprintDependencyView' },
-  { key: 'profile', icon: profileIcon, alt: 'profile view', path: '/profileView' },
-  { key: 'report', icon: reportIcon, alt: 'Report View', path: '/reportView' },
-  { key: 'sprint', icon: sprintIcon, alt: 'Sprint View', path: '/sprintView' },
+  { key: 'profile', icon: profileIcon, alt: 'profile view', path: '/profile' },
+  { key: 'report', icon: reportIcon, alt: 'Report View', path: '/report' },
+  { key: 'sprint', icon: sprintIcon, alt: 'Sprint View', path: '/sprint' },
 ];
 
 export default function Sidebar() {
