@@ -1,0 +1,55 @@
+/* Make grid cleaner */
+.gantt_grid {
+    background-color: #f9fafb; /* Tailwind slate-50 */
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+  
+  .gantt_row {
+    border-bottom: 1px solid #e5e7eb; /* Tailwind gray-200 */
+  }
+  
+  .gantt_task {
+    background-color: #fff;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Customize task bars */
+  .gantt_task_line {
+    background-color: #3b82f6 !important; /* Tailwind blue-500 */
+    border-radius: 6px !important;
+    height: 18px !important;
+  }
+  
+  .gantt_task_line.gantt_dependent_task {
+    background-color: #6366f1 !important; /* Tailwind indigo-500 */
+  }
+  
+  .gantt_task_progress {
+    background-color: #2563eb !important; /* Tailwind blue-600 */
+    border-radius: 6px;
+  }
+  
+  /* Task text inside bars */
+  .gantt_task_content {
+    color: white;
+    padding-left: 6px;
+    font-weight: 500;
+  }
+  
+  /* Arrows */
+  .gantt_link_arrow {
+    stroke: #6b7280 !important; /* Tailwind gray-500 */
+    fill: #6b7280 !important;
+  }
+  
+  /* Hover */
+  .gantt_row:hover {
+    background-color: #f1f5f9; /* Tailwind slate-100 */
+  }
+  
+  /* Hide popup tooltip if not needed */
+  .gantt_tooltip {
+    display: none !important;
+  }
+  
